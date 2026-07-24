@@ -18,6 +18,7 @@ public class RegisterRequest
     public int? TotalExperience { get; set; }
     public UserType UserType { get; set; }
     public string? Bio { get; set; }
+    public string? Position { get; set; }
 }
 
 public class LoginRequest
@@ -60,6 +61,20 @@ public class ResetPasswordRequest
 
 // ---------- User ----------
 
+public class UpdateProfileRequest
+{
+    public string? NameAr { get; set; }
+    public string? NameEn { get; set; }
+    public string? PhoneNumber { get; set; }
+    public string? City { get; set; }
+    public string? Country { get; set; }
+    public int? TotalExperience { get; set; }
+    public string? Bio { get; set; }
+    public string? Position { get; set; }
+    public IFormFile? ProfileImage { get; set; }
+    public IFormFile? CoverImage { get; set; }
+}
+
 public class UserDto
 {
     public int Id { get; set; }
@@ -74,6 +89,7 @@ public class UserDto
     public int? TotalExperience { get; set; }
     public UserType UserType { get; set; }
     public string? Bio { get; set; }
+    public string? Position { get; set; }
     public bool IsActive { get; set; }
     public bool IsFavourite { get; set; }
     public DateTime CreatedAt { get; set; }

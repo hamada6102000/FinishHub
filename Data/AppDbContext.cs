@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<Portfolio> Portfolios => Set<Portfolio>();
     public DbSet<PortfolioMedia> PortfolioMedia => Set<PortfolioMedia>();
     public DbSet<Review> Reviews => Set<Review>();
+    public DbSet<Favorite> Favorites => Set<Favorite>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -74,6 +75,21 @@ public class AppDbContext : DbContext
              .WithMany(u => u.OtpCodes)
              .HasForeignKey(o => o.UserId)
              .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<Favorite>(e =>
+        {
+            e.HasIndex(f => new { f.UserId, f.EngineerId }).IsUnique();
+
+            e.HasOne(f => f.User)
+             .WithMany(u => u.Favorites)
+             .HasForeignKey(f => f.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(f => f.Engineer)
+             .WithMany()
+             .HasForeignKey(f => f.EngineerId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

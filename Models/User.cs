@@ -15,6 +15,7 @@ public class User
     public int? TotalExperience { get; set; }
     public UserType UserType { get; set; }
     public string? Bio { get; set; }
+    public string? Position { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
@@ -28,4 +29,5 @@ public class User
     public Portfolio? Portfolio { get; set; }
     public List<Review> Reviews { get; set; } = new();
     public List<OtpCode> OtpCodes { get; set; } = new();
+    public List<Favorite> Favorites { get; set; } = new();
 }

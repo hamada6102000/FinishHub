@@ -47,6 +47,7 @@ public class AuthService
             TotalExperience = req.TotalExperience,
             UserType        = req.UserType,
             Bio             = req.Bio,
+            Position        = req.Position,
         };
 
         user.PasswordHash = _hasher.HashPassword(user, req.Password);
@@ -160,6 +161,7 @@ public class AuthService
         Bio             = user.Bio,
         IsActive        = user.IsActive,
         IsFavourite     = user.IsFavourite,
+        Position        = user.Position,
         CreatedAt       = user.CreatedAt,
     };
 }

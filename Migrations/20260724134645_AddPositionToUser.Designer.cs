@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using test.Data;
 
@@ -11,9 +12,11 @@ using test.Data;
 namespace test.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260724134645_AddPositionToUser")]
+    partial class AddPositionToUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,33 +24,6 @@ namespace test.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("test.Models.Favorite", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("EngineerId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("UserId")
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("EngineerId");
-
-                    b.HasIndex("UserId", "EngineerId")
-                        .IsUnique();
-
-                    b.ToTable("Favorites");
-                });
 
             modelBuilder.Entity("test.Models.OtpCode", b =>
                 {
@@ -293,25 +269,6 @@ namespace test.Migrations
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("test.Models.Favorite", b =>
-                {
-                    b.HasOne("test.Models.User", "Engineer")
-                        .WithMany()
-                        .HasForeignKey("EngineerId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
-
-                    b.HasOne("test.Models.User", "User")
-                        .WithMany("Favorites")
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Engineer");
-
-                    b.Navigation("User");
-                });
-
             modelBuilder.Entity("test.Models.OtpCode", b =>
                 {
                     b.HasOne("test.Models.User", "User")
@@ -390,8 +347,6 @@ namespace test.Migrations
 
             modelBuilder.Entity("test.Models.User", b =>
                 {
-                    b.Navigation("Favorites");
-
                     b.Navigation("OtpCodes");
 
                     b.Navigation("Portfolio");

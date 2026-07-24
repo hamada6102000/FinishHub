@@ -41,6 +41,9 @@ builder.Services.AddScoped<OtpService>();
 builder.Services.AddScoped<ProjectService>();
 builder.Services.AddScoped<PortfolioService>();
 builder.Services.AddScoped<ReviewService>();
+builder.Services.AddScoped<FavoriteService>();
+builder.Services.AddScoped<EngineerService>();
+builder.Services.AddScoped<UserService>();
 
 // ── FluentValidation ──────────────────────────────────────────────────────
 builder.Services.AddFluentValidationAutoValidation();
