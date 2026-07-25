@@ -36,6 +36,8 @@ builder.Services
 builder.Services.AddAuthorization();
 
 // ── Services ──────────────────────────────────────────────────────────────
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<IFirebaseAuthValidator, FirebaseAuthValidator>();
 builder.Services.AddScoped<AuthService>();
 builder.Services.AddScoped<OtpService>();
 builder.Services.AddScoped<ProjectService>();

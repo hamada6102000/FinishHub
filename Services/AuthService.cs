@@ -4,7 +4,6 @@ using System.Text;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.IdentityModel.Tokens;
-using Google.Apis.Auth;
 using test.Data;
 using test.DTOs;
 using test.Helpers;
@@ -17,13 +16,15 @@ public class AuthService
     private readonly AppDbContext _db;
     private readonly IConfiguration _config;
     private readonly IWebHostEnvironment _env;
+    private readonly IFirebaseAuthValidator _firebaseAuth;
     private readonly PasswordHasher<User> _hasher = new();
 
-    public AuthService(AppDbContext db, IConfiguration config, IWebHostEnvironment env)
+    public AuthService(AppDbContext db, IConfiguration config, IWebHostEnvironment env, IFirebaseAuthValidator firebaseAuth)
     {
         _db = db;
         _config = config;
         _env = env;
+        _firebaseAuth = firebaseAuth;
     }
 
     public async Task<(bool success, string message, AuthResponse? response)> RegisterAsync(RegisterRequest req)
@@ -80,15 +81,16 @@ public class AuthService
         return (true, "Login successful.", BuildAuthResponse(user));
     }
 
-    public async Task<(bool success, string message, AuthResponse? response)> GoogleLoginAsync(string idToken)
+    public async Task<(bool success, string message, AuthResponse? response)> GoogleLoginAsync(string idToken, UserType userType = UserType.User)
     {
-        GoogleJsonWebSignature.Payload payload;
+        ExternalAuthPayload payload;
         try
         {
-            payload = await GoogleJsonWebSignature.ValidateAsync(idToken);
+            payload = await _firebaseAuth.ValidateAsync(idToken);
         }
-        catch
+        catch (Exception ex)
         {
+            Console.Error.WriteLine($"[GoogleLoginAsync] token validation failed: {ex}");
             return (false, "Invalid Google token.", null);
         }
 
@@ -98,12 +100,13 @@ public class AuthService
         {
             user = new User
             {
-                Email       = payload.Email,
-                NameEn      = payload.Name ?? payload.Email,
-                NameAr      = payload.Name ?? payload.Email,
-                PhoneNumber = string.Empty,
-                GoogleId    = payload.Subject,
+                Email        = payload.Email,
+                NameEn       = payload.Name ?? payload.Email,
+                NameAr       = payload.Name ?? payload.Email,
+                PhoneNumber  = string.Empty,
+                GoogleId     = payload.Subject,
                 PasswordHash = string.Empty,
+                UserType     = userType,
             };
             _db.Users.Add(user);
             await _db.SaveChangesAsync();

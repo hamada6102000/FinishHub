@@ -41,7 +41,7 @@ public class AuthController : ControllerBase
     [HttpPost("google-login")]
     public async Task<IActionResult> GoogleLogin([FromBody] GoogleLoginRequest req)
     {
-        var (success, message, response) = await _auth.GoogleLoginAsync(req.IdToken);
+        var (success, message, response) = await _auth.GoogleLoginAsync(req.IdToken, req.UserType);
         if (!success) return BadRequest(ApiResponse.Fail(message));
         return Ok(ApiResponse.Success(response, message));
     }

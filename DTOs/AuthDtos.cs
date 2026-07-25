@@ -30,6 +30,7 @@ public class LoginRequest
 public class GoogleLoginRequest
 {
     public string IdToken { get; set; } = string.Empty;
+    public UserType UserType { get; set; }
 }
 
 public class AuthResponse
