@@ -19,7 +19,7 @@ public class CityService
 
     public CityService(AppDbContext db) => _db = db;
 
-    public async Task<(CityResult result, string message, CityDto? data)> CreateAsync(CreateCityRequest req)
+    public async Task<(CityResult result, string message, CityDto? data)> CreateAsync(CreateCityRequest req, string lang = "en")
     {
         var duplicate = await _db.Cities.AnyAsync(c => c.NameEn == req.NameEn || c.NameAr == req.NameAr);
         if (duplicate)
@@ -29,22 +29,22 @@ public class CityService
         _db.Cities.Add(city);
         await _db.SaveChangesAsync();
 
-        return (CityResult.Success, "City created.", Map(city));
+        return (CityResult.Success, "City created.", Map(city, lang));
     }
 
-    public async Task<List<CityDto>> GetAllAsync()
+    public async Task<List<CityDto>> GetAllAsync(string lang = "en")
     {
         var cities = await _db.Cities.AsNoTracking().OrderBy(c => c.NameEn).ToListAsync();
-        return cities.Select(Map).ToList();
+        return cities.Select(c => Map(c, lang)).ToList();
     }
 
-    public async Task<CityDto?> GetByIdAsync(int id)
+    public async Task<CityDto?> GetByIdAsync(int id, string lang = "en")
     {
         var city = await _db.Cities.AsNoTracking().FirstOrDefaultAsync(c => c.Id == id);
-        return city == null ? null : Map(city);
+        return city == null ? null : Map(city, lang);
     }
 
-    public async Task<(CityResult result, string message, CityDto? data)> UpdateAsync(int id, UpdateCityRequest req)
+    public async Task<(CityResult result, string message, CityDto? data)> UpdateAsync(int id, UpdateCityRequest req, string lang = "en")
     {
         var city = await _db.Cities.FirstOrDefaultAsync(c => c.Id == id);
         if (city == null)
@@ -58,7 +58,7 @@ public class CityService
         city.NameEn = req.NameEn;
         await _db.SaveChangesAsync();
 
-        return (CityResult.Success, "City updated.", Map(city));
+        return (CityResult.Success, "City updated.", Map(city, lang));
     }
 
     public async Task<(CityResult result, string message)> DeleteAsync(int id)
@@ -77,11 +77,10 @@ public class CityService
         return (CityResult.Success, "City deleted.");
     }
 
-    private static CityDto Map(City city) => new()
+    private static CityDto Map(City city, string lang) => new()
     {
         Id        = city.Id,
-        NameAr    = city.NameAr,
-        NameEn    = city.NameEn,
+        Name      = lang == "ar" ? city.NameAr : city.NameEn,
         CreatedAt = city.CreatedAt,
     };
 }
