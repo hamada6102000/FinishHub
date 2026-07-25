@@ -58,7 +58,7 @@ public class FavoriteService
     {
         var favorites = await _db.Favorites
             .AsNoTracking()
-            .Include(f => f.Engineer)
+            .Include(f => f.Engineer).ThenInclude(e => e.City)
             .Where(f => f.UserId == userId)
             .ToListAsync();
 
@@ -81,7 +81,7 @@ public class FavoriteService
         Name         = string.IsNullOrWhiteSpace(engineer.NameEn) ? engineer.NameAr : engineer.NameEn,
         Position     = engineer.Position,
         Rating       = ratings.TryGetValue(engineer.Id, out var avg) ? Math.Round(avg, 1) : 0,
-        City         = engineer.City,
+        City         = engineer.City?.NameEn,
         ProfileImage = engineer.ProfileImageUrl,
     };
 }

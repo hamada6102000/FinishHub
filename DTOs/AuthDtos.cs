@@ -11,7 +11,7 @@ public class RegisterRequest
     public string PhoneNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Password { get; set; } = string.Empty;
-    public string? City { get; set; }
+    public int? CityId { get; set; }
     public string? Country { get; set; }
     public IFormFile? ProfileImage { get; set; }
     public IFormFile? CoverImage { get; set; }
@@ -35,7 +35,7 @@ public class GoogleLoginRequest
 public class AuthResponse
 {
     public string Token { get; set; } = string.Empty;
-    public DateTime ExpiresAt { get; set; }
+   // public DateTime ExpiresAt { get; set; }
     public UserDto User { get; set; } = null!;
 }
 
@@ -66,7 +66,7 @@ public class UpdateProfileRequest
     public string? NameAr { get; set; }
     public string? NameEn { get; set; }
     public string? PhoneNumber { get; set; }
-    public string? City { get; set; }
+    public int? CityId { get; set; }
     public string? Country { get; set; }
     public int? TotalExperience { get; set; }
     public string? Bio { get; set; }
@@ -82,7 +82,8 @@ public class UserDto
     public string NameEn { get; set; } = string.Empty;
     public string PhoneNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
-    public string? City { get; set; }
+    public int? CityId { get; set; }
+    public string? CityName { get; set; }
     public string? Country { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? CoverImageUrl { get; set; }

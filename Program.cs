@@ -44,6 +44,7 @@ builder.Services.AddScoped<ReviewService>();
 builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<EngineerService>();
 builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<CityService>();
 
 // ── FluentValidation ──────────────────────────────────────────────────────
 builder.Services.AddFluentValidationAutoValidation();
@@ -87,6 +88,15 @@ app.UseSwaggerUI();
 app.MapGet("/", () => Results.Redirect("/swagger"));
 
 app.UseStaticFiles();
+
+var uploadsPath = Path.Combine(app.Environment.ContentRootPath, "uploads");
+Directory.CreateDirectory(uploadsPath);
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(uploadsPath),
+    RequestPath  = "/uploads"
+});
+
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();

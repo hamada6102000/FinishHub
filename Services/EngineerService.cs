@@ -18,6 +18,7 @@ public class EngineerService
             .Include(u => u.Projects).ThenInclude(p => p.Media)
             .Include(u => u.Portfolio).ThenInclude(p => p!.Media)
             .Include(u => u.Reviews)
+            .Include(u => u.City)
             .FirstOrDefaultAsync(u => u.Id == id && u.UserType == UserType.Engineer);
 
         return engineer == null ? null : Map(engineer);
@@ -33,7 +34,7 @@ public class EngineerService
         TotalExperience = engineer.TotalExperience,
         Rating          = engineer.Reviews.Count == 0 ? 0 : Math.Round(engineer.Reviews.Average(r => (double)r.Rate), 1),
         ReviewsCount    = engineer.Reviews.Count,
-        City            = engineer.City,
+        City            = engineer.City?.NameEn,
         Country         = engineer.Country,
         ProfileImageUrl = engineer.ProfileImageUrl,
         CoverImageUrl   = engineer.CoverImageUrl,

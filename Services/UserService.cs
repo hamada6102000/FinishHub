@@ -18,7 +18,7 @@ public class UserService
 
     public async Task<UserDto?> GetProfileAsync(int userId)
     {
-        var user = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _db.Users.AsNoTracking().Include(u => u.City).FirstOrDefaultAsync(u => u.Id == userId);
         return user == null ? null : AuthService.MapUser(user);
     }
 
@@ -30,7 +30,7 @@ public class UserService
         if (req.NameAr      != null) user.NameAr      = req.NameAr;
         if (req.NameEn      != null) user.NameEn      = req.NameEn;
         if (req.PhoneNumber != null) user.PhoneNumber = req.PhoneNumber;
-        if (req.City        != null) user.City        = req.City;
+        if (req.CityId.HasValue) user.CityId          = req.CityId;
         if (req.Country     != null) user.Country     = req.Country;
         if (req.Bio         != null) user.Bio         = req.Bio;
         if (req.Position    != null) user.Position    = req.Position;
@@ -43,6 +43,10 @@ public class UserService
 
         user.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
+
+        if (req.CityId.HasValue)
+            await _db.Entry(user).Reference(u => u.City).LoadAsync();
+
         return AuthService.MapUser(user);
     }
 }

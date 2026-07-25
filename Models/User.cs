@@ -8,7 +8,7 @@ public class User
     public string PhoneNumber { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
-    public string? City { get; set; }
+    public int? CityId { get; set; }
     public string? Country { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? CoverImageUrl { get; set; }
@@ -25,6 +25,7 @@ public class User
     public string? GoogleId { get; set; }
 
     // Navigation
+    public City? City { get; set; }
     public List<Project> Projects { get; set; } = new();
     public Portfolio? Portfolio { get; set; }
     public List<Review> Reviews { get; set; } = new();

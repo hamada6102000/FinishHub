@@ -31,6 +31,14 @@ public class AuthService
         if (await _db.Users.AnyAsync(u => u.Email == req.Email))
             return (false, "Email already exists.", null);
 
+        City? city = null;
+        if (req.CityId.HasValue)
+        {
+            city = await _db.Cities.FirstOrDefaultAsync(c => c.Id == req.CityId.Value);
+            if (city == null)
+                return (false, "Invalid city selected.", null);
+        }
+
         var profileUrl = await FileUploadHelper.SaveFileAsync(req.ProfileImage, "profiles", _env);
         var coverUrl   = await FileUploadHelper.SaveFileAsync(req.CoverImage, "covers", _env);
 
@@ -40,7 +48,7 @@ public class AuthService
             NameEn          = req.NameEn,
             PhoneNumber     = req.PhoneNumber,
             Email           = req.Email,
-            City            = req.City,
+            City            = city,
             Country         = req.Country,
             ProfileImageUrl = profileUrl,
             CoverImageUrl   = coverUrl,
@@ -61,7 +69,7 @@ public class AuthService
 
     public async Task<(bool success, string message, AuthResponse? response)> LoginAsync(LoginRequest req)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == req.Email);
+        var user = await _db.Users.Include(u => u.City).FirstOrDefaultAsync(u => u.Email == req.Email);
         if (user == null)
             return (false, "Invalid credentials.", null);
 
@@ -84,7 +92,7 @@ public class AuthService
             return (false, "Invalid Google token.", null);
         }
 
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Email == payload.Email);
+        var user = await _db.Users.Include(u => u.City).FirstOrDefaultAsync(u => u.Email == payload.Email);
 
         if (user == null)
         {
@@ -117,7 +125,7 @@ public class AuthService
         return new AuthResponse
         {
             Token     = token,
-            ExpiresAt = expires,
+           // ExpiresAt = expires,
             User      = MapUser(user)
         };
     }
@@ -126,7 +134,7 @@ public class AuthService
     {
         var key     = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["Jwt:Key"]!));
         var creds   = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-        var expires = DateTime.UtcNow.AddDays(double.Parse(_config["Jwt:ExpireDays"] ?? "30"));
+        var expires = DateTime.MaxValue;
 
         var claims = new[]
         {
@@ -139,7 +147,6 @@ public class AuthService
             issuer:   _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims:   claims,
-            expires:  expires,
             signingCredentials: creds);
 
         return (new JwtSecurityTokenHandler().WriteToken(token), expires);
@@ -152,7 +159,8 @@ public class AuthService
         NameEn          = user.NameEn,
         PhoneNumber     = user.PhoneNumber,
         Email           = user.Email,
-        City            = user.City,
+        CityId          = user.CityId,
+        CityName        = user.City?.NameEn,
         Country         = user.Country,
         ProfileImageUrl = user.ProfileImageUrl,
         CoverImageUrl   = user.CoverImageUrl,

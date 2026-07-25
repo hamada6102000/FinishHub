@@ -8,6 +8,7 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<City> Cities => Set<City>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMedia> ProjectMedia => Set<ProjectMedia>();
@@ -24,6 +25,16 @@ public class AppDbContext : DbContext
         {
             e.HasIndex(u => u.Email).IsUnique();
             e.Property(u => u.UserType).HasConversion<string>();
+            e.HasOne(u => u.City)
+             .WithMany(c => c.Users)
+             .HasForeignKey(u => u.CityId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<City>(e =>
+        {
+            e.HasIndex(c => c.NameEn).IsUnique();
+            e.HasIndex(c => c.NameAr).IsUnique();
         });
 
         modelBuilder.Entity<Project>(e =>
