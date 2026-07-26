@@ -18,10 +18,11 @@ public class ReviewsController : ControllerBase
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? User.FindFirstValue("sub")!);
 
-    /// <summary>Get all reviews for a user.</summary>
-    [HttpGet("user/{userId}")]
-    public async Task<IActionResult> GetUserReviews(int userId) =>
-        Ok(ApiResponse.Success(await _reviews.GetUserReviewsAsync(userId)));
+    /// <summary>Get all reviews for the current user.</summary>
+    [HttpGet("user")]
+    [Authorize]
+    public async Task<IActionResult> GetUserReviews() =>
+        Ok(ApiResponse.Success(await _reviews.GetUserReviewsAsync(CurrentUserId)));
 
     /// <summary>Get a review by id.</summary>
     [HttpGet("{id}")]
@@ -34,9 +35,10 @@ public class ReviewsController : ControllerBase
 
     /// <summary>Add a review to a user.</summary>
     [HttpPost("user/{userId}")]
+    [Authorize]
     public async Task<IActionResult> Add(int userId, [FromBody] AddReviewRequest req)
     {
-        var (success, message, dto) = await _reviews.AddAsync(userId, req);
+        var (success, message, dto) = await _reviews.AddAsync(userId, CurrentUserId, req);
         if (!success) return BadRequest(ApiResponse.Fail(message));
         return CreatedAtAction(nameof(GetById), new { id = dto!.Id }, ApiResponse.Success(dto, message));
     }

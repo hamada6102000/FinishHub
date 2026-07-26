@@ -29,14 +29,6 @@ public class PortfolioController : ControllerBase
         return Ok(ApiResponse.Success(dto));
     }
 
-    /// <summary>Create portfolio for authenticated user.</summary>
-    [HttpPost]
-    public async Task<IActionResult> Create()
-    {
-        var dto = await _portfolio.CreateAsync(CurrentUserId);
-        return Ok(ApiResponse.Success(dto, "Portfolio created."));
-    }
-
     /// <summary>Delete portfolio for authenticated user.</summary>
     [HttpDelete]
     public async Task<IActionResult> Delete()
@@ -46,13 +38,12 @@ public class PortfolioController : ControllerBase
         return Ok(ApiResponse.Success(null, "Portfolio deleted."));
     }
 
-    /// <summary>Add media to authenticated user's portfolio.</summary>
+    /// <summary>Add media to portfolio (creates portfolio automatically if it doesn't exist).</summary>
     [HttpPost("media")]
     [Consumes("multipart/form-data")]
-    public async Task<IActionResult> AddMedia([FromForm] AddPortfolioMediaRequest req)
+    public async Task<IActionResult> AddPortfolioMedia([FromForm] AddPortfolioMediaRequest req)
     {
-        var (success, dto) = await _portfolio.AddMediaAsync(CurrentUserId, req);
-        if (!success) return NotFound(ApiResponse.Fail("Portfolio not found."));
+        var (_, dto) = await _portfolio.AddMediaAsync(CurrentUserId, req);
         return Ok(ApiResponse.Success(dto, "Media added."));
     }
 

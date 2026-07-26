@@ -13,40 +13,44 @@ public class ReviewService
 
     public async Task<List<ReviewDto>> GetUserReviewsAsync(int userId)
     {
-        var reviews = await _db.Reviews.Where(r => r.UserId == userId).ToListAsync();
+        var reviews = await _db.Reviews
+            .Include(r => r.Reviewer)
+            .Where(r => r.UserId == userId)
+            .ToListAsync();
         return reviews.Select(Map).ToList();
     }
 
     public async Task<ReviewDto?> GetByIdAsync(int id)
     {
-        var r = await _db.Reviews.FirstOrDefaultAsync(r => r.Id == id);
+        var r = await _db.Reviews.Include(r => r.Reviewer).FirstOrDefaultAsync(r => r.Id == id);
         return r == null ? null : Map(r);
     }
 
-    public async Task<(bool success, string message, ReviewDto? dto)> AddAsync(int userId, AddReviewRequest req)
+    public async Task<(bool success, string message, ReviewDto? dto)> AddAsync(int userId, int reviewerId, AddReviewRequest req)
     {
         if (req.Rate < 1 || req.Rate > 5)
             return (false, "Rate must be between 1 and 5.", null);
 
         var review = new Review
         {
-            UserId       = userId,
-            ReviewerName = req.ReviewerName,
-            Description  = req.Description,
-            Rate         = req.Rate,
+            UserId      = userId,
+            ReviewerId  = reviewerId,
+            Description = req.Description,
+            Rate        = req.Rate,
         };
         _db.Reviews.Add(review);
         await _db.SaveChangesAsync();
+
+        await _db.Entry(review).Reference(r => r.Reviewer).LoadAsync();
         return (true, "Review added.", Map(review));
     }
 
     public async Task<(bool success, ReviewDto? dto)> UpdateAsync(int id, UpdateReviewRequest req)
     {
-        var review = await _db.Reviews.FirstOrDefaultAsync(r => r.Id == id);
+        var review = await _db.Reviews.Include(r => r.Reviewer).FirstOrDefaultAsync(r => r.Id == id);
         if (review == null) return (false, null);
 
-        if (req.ReviewerName != null) review.ReviewerName = req.ReviewerName;
-        if (req.Description  != null) review.Description  = req.Description;
+        if (req.Description != null) review.Description = req.Description;
         if (req.Rate.HasValue)
         {
             if (req.Rate < 1 || req.Rate > 5) return (false, null);
@@ -69,11 +73,17 @@ public class ReviewService
 
     private static ReviewDto Map(Review r) => new()
     {
-        Id           = r.Id,
-        UserId       = r.UserId,
-        ReviewerName = r.ReviewerName,
-        Description  = r.Description,
-        Rate         = r.Rate,
-        CreatedAt    = r.CreatedAt,
+        Id          = r.Id,
+        UserId      = r.UserId,
+        Reviewer    = r.Reviewer == null ? null : new ReviewerInfo
+        {
+            Id             = r.Reviewer.Id,
+            NameAr         = r.Reviewer.NameAr,
+            NameEn         = r.Reviewer.NameEn,
+            ProfileImageUrl = r.Reviewer.ProfileImageUrl,
+        },
+        Description = r.Description,
+        Rate        = r.Rate,
+        CreatedAt   = r.CreatedAt,
     };
 }

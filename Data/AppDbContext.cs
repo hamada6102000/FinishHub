@@ -78,6 +78,11 @@ public class AppDbContext : DbContext
              .WithMany(u => u.Reviews)
              .HasForeignKey(r => r.UserId)
              .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(r => r.Reviewer)
+             .WithMany()
+             .HasForeignKey(r => r.ReviewerId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<OtpCode>(e =>

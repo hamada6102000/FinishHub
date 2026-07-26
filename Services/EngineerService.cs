@@ -30,7 +30,7 @@ public class EngineerService
             .AsNoTracking()
             .Include(u => u.Projects).ThenInclude(p => p.Media)
             .Include(u => u.Portfolio).ThenInclude(p => p!.Media)
-            .Include(u => u.Reviews)
+            .Include(u => u.Reviews).ThenInclude(r => r.Reviewer)
             .Include(u => u.City)
             .FirstOrDefaultAsync(u => u.Id == id && u.UserType == UserType.Engineer);
 
@@ -87,12 +87,18 @@ public class EngineerService
         },
         Reviews = engineer.Reviews.Select(r => new ReviewDto
         {
-            Id           = r.Id,
-            UserId       = r.UserId,
-            ReviewerName = r.ReviewerName,
-            Description  = r.Description,
-            Rate         = r.Rate,
-            CreatedAt    = r.CreatedAt,
+            Id          = r.Id,
+            UserId      = r.UserId,
+            Reviewer    = r.Reviewer == null ? null : new ReviewerInfo
+            {
+                Id              = r.Reviewer.Id,
+                NameAr          = r.Reviewer.NameAr,
+                NameEn          = r.Reviewer.NameEn,
+                ProfileImageUrl = r.Reviewer.ProfileImageUrl,
+            },
+            Description = r.Description,
+            Rate        = r.Rate,
+            CreatedAt   = r.CreatedAt,
         }).ToList(),
     };
 }

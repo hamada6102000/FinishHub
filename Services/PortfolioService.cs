@@ -47,7 +47,12 @@ public class PortfolioService
     public async Task<(bool success, PortfolioDto? dto)> AddMediaAsync(int userId, AddPortfolioMediaRequest req)
     {
         var portfolio = await _db.Portfolios.Include(p => p.Media).FirstOrDefaultAsync(p => p.UserId == userId);
-        if (portfolio == null) return (false, null);
+        if (portfolio == null)
+        {
+            portfolio = new Portfolio { UserId = userId };
+            _db.Portfolios.Add(portfolio);
+            await _db.SaveChangesAsync();
+        }
 
         var imageUrls = await FileUploadHelper.SaveFilesAsync(req.Images, "portfolio/images", _env);
         var videoUrls = await FileUploadHelper.SaveFilesAsync(req.Videos, "portfolio/videos", _env);

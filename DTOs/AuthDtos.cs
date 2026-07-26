@@ -95,4 +95,9 @@ public class UserDto
     public bool IsActive { get; set; }
     public bool IsFavourite { get; set; }
     public DateTime CreatedAt { get; set; }
+    public double Rating { get; set; }
+    public int ReviewsCount { get; set; }
+    public List<ReviewDto> Reviews { get; set; } = new();
+    public List<ProjectDto> Projects { get; set; } = new();
+    public List<PortfolioDto> Portfolio { get; set; } = new();
 }
