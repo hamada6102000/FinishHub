@@ -39,6 +39,11 @@ public class FavoriteService
             return (FavoriteResult.AlreadyFavorited, "Engineer is already in your favorites.");
 
         _db.Favorites.Add(new Favorite { UserId = userId, EngineerId = engineerId });
+
+        var engineerTracked = await _db.Users.FirstOrDefaultAsync(u => u.Id == engineerId);
+        if (engineerTracked != null)
+            engineerTracked.IsFavourite = true;
+
         await _db.SaveChangesAsync();
         return (FavoriteResult.Success, "Engineer added to favorites.");
     }
@@ -50,6 +55,15 @@ public class FavoriteService
             return (FavoriteResult.NotFavorited, "Engineer is not in your favorites.");
 
         _db.Favorites.Remove(favorite);
+
+        var stillFavorited = await _db.Favorites.AnyAsync(f => f.EngineerId == engineerId && f.UserId != userId);
+        if (!stillFavorited)
+        {
+            var engineerTracked = await _db.Users.FirstOrDefaultAsync(u => u.Id == engineerId);
+            if (engineerTracked != null)
+                engineerTracked.IsFavourite = false;
+        }
+
         await _db.SaveChangesAsync();
         return (FavoriteResult.Success, "Engineer removed from favorites.");
     }

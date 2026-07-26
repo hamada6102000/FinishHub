@@ -14,6 +14,12 @@ public class EngineersController : ControllerBase
 
     public EngineersController(EngineerService engineers) => _engineers = engineers;
 
+    /// <summary>Get all active engineers.</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAll() =>
+        Ok(ApiResponse.Success(await _engineers.GetAllAsync()));
+
     /// <summary>Get the complete profile for an engineer.</summary>
     [HttpGet("{id}")]
     [AllowAnonymous]

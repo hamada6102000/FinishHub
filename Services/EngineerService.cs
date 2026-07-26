@@ -11,6 +11,19 @@ public class EngineerService
 
     public EngineerService(AppDbContext db) => _db = db;
 
+    public async Task<List<EngineerSummaryDto>> GetAllAsync()
+    {
+        var engineers = await _db.Users
+            .AsNoTracking()
+            .Include(u => u.Reviews)
+            .Include(u => u.City)
+            .Where(u => u.UserType == UserType.Engineer && u.IsActive)
+            .OrderBy(u => u.NameEn)
+            .ToListAsync();
+
+        return engineers.Select(MapSummary).ToList();
+    }
+
     public async Task<EngineerProfileDto?> GetProfileAsync(int id)
     {
         var engineer = await _db.Users
@@ -23,6 +36,23 @@ public class EngineerService
 
         return engineer == null ? null : Map(engineer);
     }
+
+    private static EngineerSummaryDto MapSummary(User engineer) => new()
+    {
+        Id              = engineer.Id,
+        NameAr          = engineer.NameAr,
+        NameEn          = engineer.NameEn,
+        Position        = engineer.Position,
+        Bio             = engineer.Bio,
+        TotalExperience = engineer.TotalExperience,
+        Rating          = engineer.Reviews.Count == 0 ? 0 : Math.Round(engineer.Reviews.Average(r => (double)r.Rate), 1),
+        ReviewsCount    = engineer.Reviews.Count,
+        City            = engineer.City?.NameEn,
+        Country         = engineer.Country,
+        ProfileImageUrl = engineer.ProfileImageUrl,
+        CoverImageUrl   = engineer.CoverImageUrl,
+        IsFavourite     = engineer.IsFavourite,
+    };
 
     private static EngineerProfileDto Map(User engineer) => new()
     {

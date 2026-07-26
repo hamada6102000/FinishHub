@@ -150,6 +150,7 @@ public class AuthService
             issuer:   _config["Jwt:Issuer"],
             audience: _config["Jwt:Audience"],
             claims:   claims,
+            expires:  expires,
             signingCredentials: creds);
 
         return (new JwtSecurityTokenHandler().WriteToken(token), expires);
