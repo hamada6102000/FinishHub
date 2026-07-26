@@ -48,7 +48,7 @@ public class UserService
         }).ToList();
         dto.Projects = user.Projects.Select(p => new ProjectDto
         {
-            Id           = p.Id,
+            Id           = p.Id, 
             UserId       = p.UserId,
             Title        = p.Title,
             Location     = p.Location,
