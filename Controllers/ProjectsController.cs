@@ -67,4 +67,14 @@ public class ProjectsController : ControllerBase
         if (!success) return NotFound(ApiResponse.Fail("Project not found or access denied."));
         return Ok(ApiResponse.Success(null, "Project deleted."));
     }
+
+    /// <summary>Mark or unmark a project as featured (admin use).</summary>
+    [HttpPatch("{id}/featured")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SetFeatured(int id, [FromBody] SetFeaturedRequest req)
+    {
+        var dto = await _projects.SetFeaturedAsync(id, req.IsFeatured);
+        if (dto == null) return NotFound(ApiResponse.Fail("Project not found."));
+        return Ok(ApiResponse.Success(dto, "Project updated."));
+    }
 }

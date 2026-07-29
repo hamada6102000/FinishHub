@@ -81,6 +81,8 @@ public class CityService
     {
         Id        = city.Id,
         Name      = lang == "ar" ? city.NameAr : city.NameEn,
+        NameEn    = city.NameEn,
+        NameAr    = city.NameAr,
         CreatedAt = city.CreatedAt,
     };
 }

@@ -19,19 +19,19 @@ public class ProjectService
 
     public async Task<List<ProjectDto>> GetAllAsync()
     {
-        var projects = await _db.Projects.Include(p => p.Media).ToListAsync();
+        var projects = await _db.Projects.Include(p => p.Media).Include(p => p.User).ToListAsync();
         return projects.Select(Map).ToList();
     }
 
     public async Task<ProjectDto?> GetByIdAsync(int id)
     {
-        var project = await _db.Projects.Include(p => p.Media).FirstOrDefaultAsync(p => p.Id == id);
+        var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
         return project == null ? null : Map(project);
     }
 
     public async Task<List<ProjectDto>> GetUserProjectsAsync(int userId)
     {
-        var projects = await _db.Projects.Include(p => p.Media).Where(p => p.UserId == userId).ToListAsync();
+        var projects = await _db.Projects.Include(p => p.Media).Include(p => p.User).Where(p => p.UserId == userId).ToListAsync();
         return projects.Select(Map).ToList();
     }
 
@@ -51,12 +51,12 @@ public class ProjectService
         await SaveMediaAsync(project.Id, req.Images, req.Videos);
         await _db.SaveChangesAsync();
 
-        return Map((await _db.Projects.Include(p => p.Media).FirstAsync(p => p.Id == project.Id)));
+        return Map((await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstAsync(p => p.Id == project.Id)));
     }
 
     public async Task<(bool success, ProjectDto? dto)> UpdateAsync(int id, int userId, UpdateProjectRequest req)
     {
-        var project = await _db.Projects.Include(p => p.Media).FirstOrDefaultAsync(p => p.Id == id);
+        var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
         if (project == null || project.UserId != userId) return (false, null);
 
         if (req.Title       != null) project.Title        = req.Title;
@@ -91,14 +91,27 @@ public class ProjectService
             _db.ProjectMedia.Add(new ProjectMedia { ProjectId = projectId, Url = url, MediaType = MediaType.Video });
     }
 
+    public async Task<ProjectDto?> SetFeaturedAsync(int id, bool isFeatured)
+    {
+        var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
+        if (project == null) return null;
+
+        project.IsFeatured = isFeatured;
+        await _db.SaveChangesAsync();
+        return Map(project);
+    }
+
     private static ProjectDto Map(Project p) => new()
     {
         Id           = p.Id,
         UserId       = p.UserId,
+        UserNameAr   = p.User?.NameAr ?? string.Empty,
+        UserNameEn   = p.User?.NameEn ?? string.Empty,
         Title        = p.Title,
         Location     = p.Location,
         PropertyType = p.PropertyType,
         Description  = p.Description,
+        IsFeatured   = p.IsFeatured,
         CreatedAt    = p.CreatedAt,
         Media        = p.Media.Select(m => new ProjectMediaDto { Id = m.Id, Url = m.Url, MediaType = m.MediaType }).ToList(),
     };

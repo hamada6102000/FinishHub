@@ -8,6 +8,7 @@ public class Project
     public string? Location { get; set; }
     public PropertyType PropertyType { get; set; }
     public string? Description { get; set; }
+    public bool IsFeatured { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
     public User User { get; set; } = null!;

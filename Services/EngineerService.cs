@@ -72,6 +72,8 @@ public class EngineerService
         {
             Id           = p.Id,
             UserId       = p.UserId,
+            UserNameAr   = engineer.NameAr,
+            UserNameEn   = engineer.NameEn,
             Title        = p.Title,
             Location     = p.Location,
             PropertyType = p.PropertyType,

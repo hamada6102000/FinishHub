@@ -10,6 +10,11 @@ builder.Services.AddHttpClient<ICityApiClient, CityApiClient>(client =>
     client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
 });
 
+builder.Services.AddHttpClient<IProjectApiClient, ProjectApiClient>(client =>
+{
+    client.BaseAddress = new Uri(builder.Configuration["ApiSettings:BaseUrl"]!);
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
