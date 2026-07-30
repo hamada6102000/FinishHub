@@ -58,6 +58,19 @@ public class CitiesController : ControllerBase
         };
     }
 
+    /// <summary>Pin or unpin a city (admin use).</summary>
+    [HttpPatch("{id}/pinned")]
+    public async Task<IActionResult> SetPinned(int id, [FromBody] SetCityPinnedRequest req)
+    {
+        var (result, message, data) = await _cities.SetPinnedAsync(id, req.IsPinned, GetLang());
+        return result switch
+        {
+            CityResult.Success => Ok(ApiResponse.Success(data, message)),
+            CityResult.NotFound => NotFound(ApiResponse.Fail(message)),
+            _ => BadRequest(ApiResponse.Fail(message)),
+        };
+    }
+
     /// <summary>Delete a city.</summary>
     [HttpDelete("{id}")]
     public async Task<IActionResult> Delete(int id)

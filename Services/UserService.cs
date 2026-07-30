@@ -16,6 +16,12 @@ public class UserService
         _env = env;
     }
 
+    public async Task<List<UserDto>> GetAllAsync()
+    {
+        var users = await _db.Users.AsNoTracking().Include(u => u.City).ToListAsync();
+        return users.Select(AuthService.MapUser).ToList();
+    }
+
     public async Task<UserDto?> GetProfileAsync(int userId)
     {
         var user = await _db.Users
@@ -93,6 +99,18 @@ public class UserService
 
         if (req.CityId.HasValue)
             await _db.Entry(user).Reference(u => u.City).LoadAsync();
+
+        return AuthService.MapUser(user);
+    }
+
+    public async Task<UserDto?> SetTrustedAsync(int userId, bool isTrusted)
+    {
+        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return null;
+
+        user.IsTrusted = isTrusted;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
 
         return AuthService.MapUser(user);
     }

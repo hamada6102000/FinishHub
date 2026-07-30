@@ -20,6 +20,7 @@ public class User
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;
     public bool IsFavourite { get; set; } = false;
+    public bool IsTrusted { get; set; } = false;
 
     // Google Login
     public string? GoogleId { get; set; }

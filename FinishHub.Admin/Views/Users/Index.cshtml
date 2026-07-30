@@ -1,11 +1,11 @@
-@model List<FinishHub.Admin.Models.ProjectViewModel>
+@model List<FinishHub.Admin.Models.UserViewModel>
 
 @{
-    ViewData["Title"] = "Projects";
+    ViewData["Title"] = "Users";
 }
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h1 class="h3 mb-0">Projects</h1>
+    <h1 class="h3 mb-0">Users</h1>
 </div>
 
 @if (TempData["Success"] != null)
@@ -28,12 +28,12 @@
         <table class="table table-hover mb-0 align-middle">
             <thead class="table-light">
                 <tr>
-                    <th>Owner</th>
-                    <th>Title</th>
-                    <th>Location</th>
-                    <th>Property Type</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Type</th>
                     <th>Created</th>
-                    <th>Featured</th>
+                    <th>Trusted</th>
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
@@ -41,35 +41,35 @@
                 @if (Model.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No projects have been added yet.</td>
+                        <td colspan="7" class="text-center text-muted py-4">No users have been added yet.</td>
                     </tr>
                 }
                 else
                 {
-                    foreach (var project in Model)
+                    foreach (var user in Model)
                     {
                         <tr>
-                            <td>@project.UserName</td>
-                            <td>@project.Title</td>
-                            <td>@project.Location</td>
-                            <td>@project.PropertyType</td>
-                            <td>@project.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td>@user.NameEn</td>
+                            <td>@user.Email</td>
+                            <td>@user.PhoneNumber</td>
+                            <td>@user.UserType</td>
+                            <td>@user.CreatedAt.ToString("yyyy-MM-dd")</td>
                             <td>
-                                @if (project.IsFeatured)
+                                @if (user.IsTrusted)
                                 {
-                                    <span class="badge bg-success">Featured</span>
+                                    <span class="badge bg-success">Trusted</span>
                                 }
                                 else
                                 {
-                                    <span class="badge bg-secondary">Not featured</span>
+                                    <span class="badge bg-secondary">Not trusted</span>
                                 }
                             </td>
                             <td class="text-end">
-                                <form asp-action="SetFeatured" method="post" class="d-inline">
-                                    <input type="hidden" name="id" value="@project.Id" />
-                                    <input type="hidden" name="isFeatured" value="@((!project.IsFeatured).ToString().ToLowerInvariant())" />
-                                    <button type="submit" class="btn btn-sm @(project.IsFeatured ? "btn-outline-secondary" : "btn-outline-success")">
-                                        @(project.IsFeatured ? "Unmark Featured" : "Mark Featured")
+                                <form asp-action="SetTrusted" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@user.Id" />
+                                    <input type="hidden" name="isTrusted" value="@((!user.IsTrusted).ToString().ToLowerInvariant())" />
+                                    <button type="submit" class="btn btn-sm @(user.IsTrusted ? "btn-outline-secondary" : "btn-outline-success")">
+                                        @(user.IsTrusted ? "Unmark Trusted" : "Mark Trusted")
                                     </button>
                                 </form>
                             </td>

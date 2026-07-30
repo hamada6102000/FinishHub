@@ -24,7 +24,7 @@ public class EngineerService
         return engineers.Select(MapSummary).ToList();
     }
 
-    public async Task<EngineerProfileDto?> GetProfileAsync(int id)
+    public async Task<EngineerProfileDto?> GetProfileAsync(int id, string lang = "en")
     {
         var engineer = await _db.Users
             .AsNoTracking()
@@ -34,7 +34,7 @@ public class EngineerService
             .Include(u => u.City)
             .FirstOrDefaultAsync(u => u.Id == id && u.UserType == UserType.Engineer);
 
-        return engineer == null ? null : Map(engineer);
+        return engineer == null ? null : Map(engineer, lang);
     }
 
     private static EngineerSummaryDto MapSummary(User engineer) => new()
@@ -54,7 +54,7 @@ public class EngineerService
         IsFavourite     = engineer.IsFavourite,
     };
 
-    private static EngineerProfileDto Map(User engineer) => new()
+    private static EngineerProfileDto Map(User engineer, string lang) => new()
     {
         Id              = engineer.Id,
         NameAr          = engineer.NameAr,
@@ -72,8 +72,7 @@ public class EngineerService
         {
             Id           = p.Id,
             UserId       = p.UserId,
-            UserNameAr   = engineer.NameAr,
-            UserNameEn   = engineer.NameEn,
+            UserName     = lang == "ar" ? engineer.NameAr : engineer.NameEn,
             Title        = p.Title,
             Location     = p.Location,
             PropertyType = p.PropertyType,

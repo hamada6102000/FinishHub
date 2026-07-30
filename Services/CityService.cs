@@ -25,7 +25,7 @@ public class CityService
         if (duplicate)
             return (CityResult.DuplicateName, "A city with this name already exists.", null);
 
-        var city = new City { NameAr = req.NameAr, NameEn = req.NameEn };
+        var city = new City { NameAr = req.NameAr, NameEn = req.NameEn, IsPinned = req.IsPinned };
         _db.Cities.Add(city);
         await _db.SaveChangesAsync();
 
@@ -34,7 +34,10 @@ public class CityService
 
     public async Task<List<CityDto>> GetAllAsync(string lang = "en")
     {
-        var cities = await _db.Cities.AsNoTracking().OrderBy(c => c.NameEn).ToListAsync();
+        var cities = await _db.Cities.AsNoTracking()
+            .OrderByDescending(c => c.IsPinned)
+            .ThenBy(c => c.NameEn)
+            .ToListAsync();
         return cities.Select(c => Map(c, lang)).ToList();
     }
 
@@ -54,11 +57,24 @@ public class CityService
         if (duplicate)
             return (CityResult.DuplicateName, "A city with this name already exists.", null);
 
-        city.NameAr = req.NameAr;
-        city.NameEn = req.NameEn;
+        city.NameAr   = req.NameAr;
+        city.NameEn   = req.NameEn;
+        city.IsPinned = req.IsPinned;
         await _db.SaveChangesAsync();
 
         return (CityResult.Success, "City updated.", Map(city, lang));
+    }
+
+    public async Task<(CityResult result, string message, CityDto? data)> SetPinnedAsync(int id, bool isPinned, string lang = "en")
+    {
+        var city = await _db.Cities.FirstOrDefaultAsync(c => c.Id == id);
+        if (city == null)
+            return (CityResult.NotFound, "City not found.", null);
+
+        city.IsPinned = isPinned;
+        await _db.SaveChangesAsync();
+
+        return (CityResult.Success, isPinned ? "City pinned." : "City unpinned.", Map(city, lang));
     }
 
     public async Task<(CityResult result, string message)> DeleteAsync(int id)
@@ -83,6 +99,7 @@ public class CityService
         Name      = lang == "ar" ? city.NameAr : city.NameEn,
         NameEn    = city.NameEn,
         NameAr    = city.NameAr,
+        IsPinned  = city.IsPinned,
         CreatedAt = city.CreatedAt,
     };
 }

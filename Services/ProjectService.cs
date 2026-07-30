@@ -17,25 +17,25 @@ public class ProjectService
         _env = env;
     }
 
-    public async Task<List<ProjectDto>> GetAllAsync()
+    public async Task<List<ProjectDto>> GetAllAsync(string lang = "en")
     {
         var projects = await _db.Projects.Include(p => p.Media).Include(p => p.User).ToListAsync();
-        return projects.Select(Map).ToList();
+        return projects.Select(p => Map(p, lang)).ToList();
     }
 
-    public async Task<ProjectDto?> GetByIdAsync(int id)
+    public async Task<ProjectDto?> GetByIdAsync(int id, string lang = "en")
     {
         var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
-        return project == null ? null : Map(project);
+        return project == null ? null : Map(project, lang);
     }
 
-    public async Task<List<ProjectDto>> GetUserProjectsAsync(int userId)
+    public async Task<List<ProjectDto>> GetUserProjectsAsync(int userId, string lang = "en")
     {
         var projects = await _db.Projects.Include(p => p.Media).Include(p => p.User).Where(p => p.UserId == userId).ToListAsync();
-        return projects.Select(Map).ToList();
+        return projects.Select(p => Map(p, lang)).ToList();
     }
 
-    public async Task<ProjectDto> CreateAsync(int userId, CreateProjectRequest req)
+    public async Task<ProjectDto> CreateAsync(int userId, CreateProjectRequest req, string lang = "en")
     {
         var project = new Project
         {
@@ -51,10 +51,10 @@ public class ProjectService
         await SaveMediaAsync(project.Id, req.Images, req.Videos);
         await _db.SaveChangesAsync();
 
-        return Map((await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstAsync(p => p.Id == project.Id)));
+        return Map((await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstAsync(p => p.Id == project.Id)), lang);
     }
 
-    public async Task<(bool success, ProjectDto? dto)> UpdateAsync(int id, int userId, UpdateProjectRequest req)
+    public async Task<(bool success, ProjectDto? dto)> UpdateAsync(int id, int userId, UpdateProjectRequest req, string lang = "en")
     {
         var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
         if (project == null || project.UserId != userId) return (false, null);
@@ -65,7 +65,7 @@ public class ProjectService
         if (req.PropertyType.HasValue) project.PropertyType = req.PropertyType.Value;
 
         await _db.SaveChangesAsync();
-        return (true, Map(project));
+        return (true, Map(project, lang));
     }
 
     public async Task<bool> DeleteAsync(int id, int userId)
@@ -91,22 +91,21 @@ public class ProjectService
             _db.ProjectMedia.Add(new ProjectMedia { ProjectId = projectId, Url = url, MediaType = MediaType.Video });
     }
 
-    public async Task<ProjectDto?> SetFeaturedAsync(int id, bool isFeatured)
+    public async Task<ProjectDto?> SetFeaturedAsync(int id, bool isFeatured, string lang = "en")
     {
         var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
         if (project == null) return null;
 
         project.IsFeatured = isFeatured;
         await _db.SaveChangesAsync();
-        return Map(project);
+        return Map(project, lang);
     }
 
-    private static ProjectDto Map(Project p) => new()
+    private static ProjectDto Map(Project p, string lang) => new()
     {
         Id           = p.Id,
         UserId       = p.UserId,
-        UserNameAr   = p.User?.NameAr ?? string.Empty,
-        UserNameEn   = p.User?.NameEn ?? string.Empty,
+        UserName     = lang == "ar" ? (p.User?.NameAr ?? string.Empty) : (p.User?.NameEn ?? string.Empty),
         Title        = p.Title,
         Location     = p.Location,
         PropertyType = p.PropertyType,

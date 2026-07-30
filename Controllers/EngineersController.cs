@@ -14,6 +14,9 @@ public class EngineersController : ControllerBase
 
     public EngineersController(EngineerService engineers) => _engineers = engineers;
 
+    private string GetLang() =>
+        Request.Headers.AcceptLanguage.ToString().StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en";
+
     /// <summary>Get all active engineers.</summary>
     [HttpGet]
     [AllowAnonymous]
@@ -25,7 +28,7 @@ public class EngineersController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
-        var dto = await _engineers.GetProfileAsync(id);
+        var dto = await _engineers.GetProfileAsync(id, GetLang());
         if (dto == null) return NotFound(ApiResponse.Fail("Engineer not found."));
         return Ok(ApiResponse.Success(dto));
     }

@@ -30,14 +30,21 @@ public class CityApiClient : ICityApiClient
 
     public async Task<(bool success, string message, CityViewModel? data)> CreateAsync(CityFormViewModel form)
     {
-        var response = await _http.PostAsJsonAsync("api/cities", new { form.NameAr, form.NameEn });
+        var response = await _http.PostAsJsonAsync("api/cities", new { form.NameAr, form.NameEn, form.IsPinned });
         return await ReadEnvelopeAsync<CityViewModel>(response);
     }
 
     public async Task<(bool success, string message, CityViewModel? data)> UpdateAsync(int id, CityFormViewModel form)
     {
-        var response = await _http.PutAsJsonAsync($"api/cities/{id}", new { form.NameAr, form.NameEn });
+        var response = await _http.PutAsJsonAsync($"api/cities/{id}", new { form.NameAr, form.NameEn, form.IsPinned });
         return await ReadEnvelopeAsync<CityViewModel>(response);
+    }
+
+    public async Task<(bool success, string message)> SetPinnedAsync(int id, bool isPinned)
+    {
+        var response = await _http.PatchAsJsonAsync($"api/cities/{id}/pinned", new { IsPinned = isPinned });
+        var (success, message, _) = await ReadEnvelopeAsync<object>(response);
+        return (success, message);
     }
 
     public async Task<(bool success, string message)> DeleteAsync(int id)

@@ -19,18 +19,21 @@ public class ProjectsController : ControllerBase
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? User.FindFirstValue("sub")!);
 
+    private string GetLang() =>
+        Request.Headers.AcceptLanguage.ToString().StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en";
+
     /// <summary>Get all projects.</summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll() =>
-        Ok(ApiResponse.Success(await _projects.GetAllAsync()));
+        Ok(ApiResponse.Success(await _projects.GetAllAsync(GetLang())));
 
     /// <summary>Get a project by id.</summary>
     [HttpGet("{id}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetById(int id)
     {
-        var dto = await _projects.GetByIdAsync(id);
+        var dto = await _projects.GetByIdAsync(id, GetLang());
         if (dto == null) return NotFound(ApiResponse.Fail("Project not found."));
         return Ok(ApiResponse.Success(dto));
     }
@@ -39,14 +42,14 @@ public class ProjectsController : ControllerBase
     [HttpGet("user/{userId}")]
     [AllowAnonymous]
     public async Task<IActionResult> GetUserProjects(int userId) =>
-        Ok(ApiResponse.Success(await _projects.GetUserProjectsAsync(userId)));
+        Ok(ApiResponse.Success(await _projects.GetUserProjectsAsync(userId, GetLang())));
 
     /// <summary>Create a new project (authenticated user).</summary>
     [HttpPost]
     [Consumes("multipart/form-data")]
     public async Task<IActionResult> Create([FromForm] CreateProjectRequest req)
     {
-        var dto = await _projects.CreateAsync(CurrentUserId, req);
+        var dto = await _projects.CreateAsync(CurrentUserId, req, GetLang());
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, ApiResponse.Success(dto, "Project created."));
     }
 
@@ -54,7 +57,7 @@ public class ProjectsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectRequest req)
     {
-        var (success, dto) = await _projects.UpdateAsync(id, CurrentUserId, req);
+        var (success, dto) = await _projects.UpdateAsync(id, CurrentUserId, req, GetLang());
         if (!success) return NotFound(ApiResponse.Fail("Project not found or access denied."));
         return Ok(ApiResponse.Success(dto, "Project updated."));
     }
@@ -73,7 +76,7 @@ public class ProjectsController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> SetFeatured(int id, [FromBody] SetFeaturedRequest req)
     {
-        var dto = await _projects.SetFeaturedAsync(id, req.IsFeatured);
+        var dto = await _projects.SetFeaturedAsync(id, req.IsFeatured, GetLang());
         if (dto == null) return NotFound(ApiResponse.Fail("Project not found."));
         return Ok(ApiResponse.Success(dto, "Project updated."));
     }

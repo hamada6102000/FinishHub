@@ -8,5 +8,6 @@ public interface ICityApiClient
     Task<(bool success, string message, CityViewModel? data)> GetByIdAsync(int id);
     Task<(bool success, string message, CityViewModel? data)> CreateAsync(CityFormViewModel form);
     Task<(bool success, string message, CityViewModel? data)> UpdateAsync(int id, CityFormViewModel form);
+    Task<(bool success, string message)> SetPinnedAsync(int id, bool isPinned);
     Task<(bool success, string message)> DeleteAsync(int id);
 }

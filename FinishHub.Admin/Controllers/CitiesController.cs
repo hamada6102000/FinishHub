@@ -44,7 +44,7 @@ public class CitiesController : Controller
             return RedirectToAction(nameof(Index));
         }
 
-        return View(new CityFormViewModel { Id = city.Id, NameAr = city.NameAr, NameEn = city.NameEn });
+        return View(new CityFormViewModel { Id = city.Id, NameAr = city.NameAr, NameEn = city.NameEn, IsPinned = city.IsPinned });
     }
 
     [HttpPost]
@@ -61,6 +61,15 @@ public class CitiesController : Controller
         }
 
         TempData["Success"] = message;
+        return RedirectToAction(nameof(Index));
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetPinned(int id, bool isPinned)
+    {
+        var (success, message) = await _cities.SetPinnedAsync(id, isPinned);
+        TempData[success ? "Success" : "Error"] = message;
         return RedirectToAction(nameof(Index));
     }
 

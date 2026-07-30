@@ -28,6 +28,12 @@ public class UsersController : ControllerBase
         return Ok(ApiResponse.Success(dto));
     }
 
+    /// <summary>Get all users (admin use).</summary>
+    [HttpGet]
+    [AllowAnonymous]
+    public async Task<IActionResult> GetAll() =>
+        Ok(ApiResponse.Success(await _users.GetAllAsync()));
+
     /// <summary>Update the logged-in user's profile.</summary>
     [HttpPut("me")]
     [Consumes("multipart/form-data")]
@@ -36,5 +42,15 @@ public class UsersController : ControllerBase
         var dto = await _users.UpdateProfileAsync(CurrentUserId, req);
         if (dto == null) return NotFound(ApiResponse.Fail("User not found."));
         return Ok(ApiResponse.Success(dto, "Profile updated."));
+    }
+
+    /// <summary>Mark or unmark a user as trusted (admin use).</summary>
+    [HttpPatch("{id}/trusted")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SetTrusted(int id, [FromBody] SetTrustedRequest req)
+    {
+        var dto = await _users.SetTrustedAsync(id, req.IsTrusted);
+        if (dto == null) return NotFound(ApiResponse.Fail("User not found."));
+        return Ok(ApiResponse.Success(dto, "User updated."));
     }
 }

@@ -62,6 +62,11 @@ public class ResetPasswordRequest
 
 // ---------- User ----------
 
+public class SetTrustedRequest
+{
+    public bool IsTrusted { get; set; }
+}
+
 public class UpdateProfileRequest
 {
     public string? NameAr { get; set; }
@@ -94,6 +99,7 @@ public class UserDto
     public string? Position { get; set; }
     public bool IsActive { get; set; }
     public bool IsFavourite { get; set; }
+    public bool IsTrusted { get; set; }
     public DateTime CreatedAt { get; set; }
     public double Rating { get; set; }
     public int ReviewsCount { get; set; }

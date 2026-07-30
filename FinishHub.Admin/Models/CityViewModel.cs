@@ -7,6 +7,7 @@ public class CityViewModel
     public int Id { get; set; }
     public string NameAr { get; set; } = string.Empty;
     public string NameEn { get; set; } = string.Empty;
+    public bool IsPinned { get; set; }
     public DateTime CreatedAt { get; set; }
 }
 
@@ -21,4 +22,7 @@ public class CityFormViewModel
     [Required(ErrorMessage = "English name is required.")]
     [Display(Name = "Name (English)")]
     public string NameEn { get; set; } = string.Empty;
+
+    [Display(Name = "Pinned city")]
+    public bool IsPinned { get; set; }
 }

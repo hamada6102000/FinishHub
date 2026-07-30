@@ -32,6 +32,9 @@ public class AuthService
         if (await _db.Users.AnyAsync(u => u.Email == req.Email))
             return (false, "Email already exists.", null);
 
+        if (!Enum.IsDefined(typeof(UserType), req.UserType))
+            return (false, "Invalid user type. Use 1 (User) or 2 (Engineer).", null);
+
         City? city = null;
         if (req.CityId.HasValue)
         {
@@ -83,6 +86,9 @@ public class AuthService
 
     public async Task<(bool success, string message, AuthResponse? response)> GoogleLoginAsync(string idToken, UserType userType = UserType.User)
     {
+        if (!Enum.IsDefined(typeof(UserType), userType))
+            userType = UserType.User;
+
         ExternalAuthPayload payload;
         try
         {
@@ -173,6 +179,7 @@ public class AuthService
         Bio             = user.Bio,
         IsActive        = user.IsActive,
         IsFavourite     = user.IsFavourite,
+        IsTrusted       = user.IsTrusted,
         Position        = user.Position,
         CreatedAt       = user.CreatedAt,
     };
