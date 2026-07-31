@@ -20,3 +20,11 @@ public enum MediaType
     Image,
     Video
 }
+
+public enum DesignService
+{
+    InteriorDesign,
+    FullFinishing,
+    Architecture,
+    Consultation
+}

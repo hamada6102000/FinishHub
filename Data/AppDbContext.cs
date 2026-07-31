@@ -16,6 +16,7 @@ public class AppDbContext : DbContext
     public DbSet<PortfolioMedia> PortfolioMedia => Set<PortfolioMedia>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
+    public DbSet<DesignConversationRequest> DesignConversationRequests => Set<DesignConversationRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -105,6 +106,31 @@ public class AppDbContext : DbContext
             e.HasOne(f => f.Engineer)
              .WithMany()
              .HasForeignKey(f => f.EngineerId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<DesignConversationRequest>(e =>
+        {
+            e.Property(r => r.Service).HasConversion<string>();
+            e.Property(r => r.FullName).HasMaxLength(200);
+            e.Property(r => r.WhatsAppNumber).HasMaxLength(30);
+
+            e.HasIndex(r => r.UserId);
+            e.HasIndex(r => r.EngineerId);
+
+            e.HasOne(r => r.User)
+             .WithMany()
+             .HasForeignKey(r => r.UserId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(r => r.Engineer)
+             .WithMany()
+             .HasForeignKey(r => r.EngineerId)
+             .OnDelete(DeleteBehavior.Restrict);
+
+            e.HasOne(r => r.City)
+             .WithMany()
+             .HasForeignKey(r => r.CityId)
              .OnDelete(DeleteBehavior.Restrict);
         });
     }

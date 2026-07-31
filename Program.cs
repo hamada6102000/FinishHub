@@ -47,6 +47,7 @@ builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<EngineerService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CityService>();
+builder.Services.AddScoped<DesignConversationService>();
 
 // ── FluentValidation ──────────────────────────────────────────────────────
 builder.Services.AddFluentValidationAutoValidation();
