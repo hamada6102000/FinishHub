@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using test.Data;
 using test.DTOs;
+using test.Helpers;
 using test.Models;
 
 namespace test.Services;
@@ -60,20 +61,22 @@ public class DesignConversationService
         await BaseQuery().Where(r => r.Id == id).Select(Projection).FirstOrDefaultAsync();
 
     /// <summary>Requests the given user created as a client.</summary>
-    public async Task<List<DesignConversationDto>> GetMyRequestsAsync(int userId) =>
+    public async Task<PagedResult<DesignConversationDto>> GetMyRequestsAsync(int userId, PaginationQuery pagination) =>
         await BaseQuery()
             .Where(r => r.UserId == userId)
             .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id)
             .Select(Projection)
-            .ToListAsync();
+            .ToPagedResultAsync(pagination);
 
     /// <summary>Requests received by the given user as the engineer.</summary>
-    public async Task<List<DesignConversationDto>> GetReceivedRequestsAsync(int engineerId) =>
+    public async Task<PagedResult<DesignConversationDto>> GetReceivedRequestsAsync(int engineerId, PaginationQuery pagination) =>
         await BaseQuery()
             .Where(r => r.EngineerId == engineerId)
             .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id)
             .Select(Projection)
-            .ToListAsync();
+            .ToPagedResultAsync(pagination);
 
     private IQueryable<DesignConversationRequest> BaseQuery() =>
         _db.DesignConversationRequests

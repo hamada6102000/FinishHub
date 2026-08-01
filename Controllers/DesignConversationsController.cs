@@ -44,13 +44,13 @@ public class DesignConversationsController : ControllerBase
         return Ok(ApiResponse.Success(dto));
     }
 
-    /// <summary>Get all design conversation requests the logged-in user booked.</summary>
+    /// <summary>Get a page of design conversation requests the logged-in user booked.</summary>
     [HttpGet("my")]
-    public async Task<IActionResult> GetMine() =>
-        Ok(ApiResponse.Success(await _conversations.GetMyRequestsAsync(CurrentUserId)));
+    public async Task<IActionResult> GetMine([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _conversations.GetMyRequestsAsync(CurrentUserId, pagination)));
 
-    /// <summary>Get all design conversation requests sent to the logged-in engineer.</summary>
+    /// <summary>Get a page of design conversation requests sent to the logged-in engineer.</summary>
     [HttpGet("received")]
-    public async Task<IActionResult> GetReceived() =>
-        Ok(ApiResponse.Success(await _conversations.GetReceivedRequestsAsync(CurrentUserId)));
+    public async Task<IActionResult> GetReceived([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _conversations.GetReceivedRequestsAsync(CurrentUserId, pagination)));
 }

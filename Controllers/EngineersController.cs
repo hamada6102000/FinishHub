@@ -17,11 +17,11 @@ public class EngineersController : ControllerBase
     private string GetLang() =>
         Request.Headers.AcceptLanguage.ToString().StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en";
 
-    /// <summary>Get all active engineers.</summary>
+    /// <summary>Get a page of active engineers.</summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll() =>
-        Ok(ApiResponse.Success(await _engineers.GetAllAsync()));
+    public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _engineers.GetAllAsync(pagination)));
 
     /// <summary>Get the complete profile for an engineer.</summary>
     [HttpGet("{id}")]

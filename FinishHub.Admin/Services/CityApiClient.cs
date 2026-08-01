@@ -15,11 +15,11 @@ public class CityApiClient : ICityApiClient
 
     public CityApiClient(HttpClient http) => _http = http;
 
-    public async Task<List<CityViewModel>> GetAllAsync()
+    public async Task<PagedResult<CityViewModel>> GetAllAsync(int page, int pageSize)
     {
-        var response = await _http.GetAsync("api/cities");
-        var envelope = await ReadEnvelopeAsync<List<CityViewModel>>(response);
-        return envelope.data ?? new();
+        var response = await _http.GetAsync($"api/cities?page={page}&pageSize={pageSize}");
+        var envelope = await ReadEnvelopeAsync<PagedResult<CityViewModel>>(response);
+        return envelope.data ?? PagedResult<CityViewModel>.Empty(page, pageSize);
     }
 
     public async Task<(bool success, string message, CityViewModel? data)> GetByIdAsync(int id)

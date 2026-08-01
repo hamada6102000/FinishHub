@@ -1,4 +1,4 @@
-@model List<FinishHub.Admin.Models.UserViewModel>
+@model FinishHub.Admin.Models.PagedResult<FinishHub.Admin.Models.UserViewModel>
 
 @{
     ViewData["Title"] = "Users";
@@ -38,15 +38,17 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Model.Count == 0)
+                @if (Model.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No users have been added yet.</td>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            @(Model.TotalCount == 0 ? "No users have been added yet." : "This page is empty.")
+                        </td>
                     </tr>
                 }
                 else
                 {
-                    foreach (var user in Model)
+                    foreach (var user in Model.Items)
                     {
                         <tr>
                             <td>@user.NameEn</td>
@@ -68,6 +70,8 @@
                                 <form asp-action="SetTrusted" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@user.Id" />
                                     <input type="hidden" name="isTrusted" value="@((!user.IsTrusted).ToString().ToLowerInvariant())" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                     <button type="submit" class="btn btn-sm @(user.IsTrusted ? "btn-outline-secondary" : "btn-outline-success")">
                                         @(user.IsTrusted ? "Unmark Trusted" : "Mark Trusted")
                                     </button>
@@ -80,3 +84,5 @@
         </table>
     </div>
 </div>
+
+@{await Html.RenderPartialAsync("_Pager", FinishHub.Admin.Models.PagerViewModel.From(Model));}

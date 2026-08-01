@@ -47,8 +47,8 @@ public class FavoritesController : ControllerBase
         };
     }
 
-    /// <summary>Get all favorite engineers for the logged-in user.</summary>
+    /// <summary>Get a page of favorite engineers for the logged-in user.</summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll() =>
-        Ok(ApiResponse.Success(await _favorites.GetFavoritesAsync(CurrentUserId)));
+    public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _favorites.GetFavoritesAsync(CurrentUserId, pagination)));
 }

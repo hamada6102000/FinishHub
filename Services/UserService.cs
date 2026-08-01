@@ -16,10 +16,16 @@ public class UserService
         _env = env;
     }
 
-    public async Task<List<UserDto>> GetAllAsync()
+    public async Task<PagedResult<UserDto>> GetAllAsync(PaginationQuery pagination)
     {
-        var users = await _db.Users.AsNoTracking().Include(u => u.City).ToListAsync();
-        return users.Select(AuthService.MapUser).ToList();
+        var page = await _db.Users
+            .AsNoTracking()
+            .Include(u => u.City)
+            .OrderByDescending(u => u.CreatedAt)
+            .ThenByDescending(u => u.Id)
+            .ToPagedResultAsync(pagination);
+
+        return page.Map(AuthService.MapUser);
     }
 
     public async Task<UserDto?> GetProfileAsync(int userId)

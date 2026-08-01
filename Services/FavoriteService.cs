@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using test.Data;
 using test.DTOs;
+using test.Helpers;
 using test.Models;
 
 namespace test.Services;
@@ -68,15 +69,17 @@ public class FavoriteService
         return (FavoriteResult.Success, "Engineer removed from favorites.");
     }
 
-    public async Task<List<FavoriteEngineerDto>> GetFavoritesAsync(int userId)
+    public async Task<PagedResult<FavoriteEngineerDto>> GetFavoritesAsync(int userId, PaginationQuery pagination)
     {
-        var favorites = await _db.Favorites
+        var page = await _db.Favorites
             .AsNoTracking()
             .Include(f => f.Engineer).ThenInclude(e => e.City)
             .Where(f => f.UserId == userId)
-            .ToListAsync();
+            .OrderByDescending(f => f.Id)
+            .ToPagedResultAsync(pagination);
 
-        if (favorites.Count == 0) return new();
+        var favorites = page.Items;
+        if (favorites.Count == 0) return page.Map(f => Map(f.Engineer, new Dictionary<int, double>()));
 
         var engineerIds = favorites.Select(f => f.EngineerId).ToList();
         var ratings = await _db.Reviews
@@ -86,7 +89,7 @@ public class FavoriteService
             .Select(g => new { UserId = g.Key, Average = g.Average(r => (double)r.Rate) })
             .ToDictionaryAsync(x => x.UserId, x => x.Average);
 
-        return favorites.Select(f => Map(f.Engineer, ratings)).ToList();
+        return page.Map(f => Map(f.Engineer, ratings));
     }
 
     private static FavoriteEngineerDto Map(User engineer, Dictionary<int, double> ratings) => new()

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using test.Data;
 using test.DTOs;
+using test.Helpers;
 using test.Models;
 
 namespace test.Services;
@@ -11,17 +12,28 @@ public class EngineerService
 
     public EngineerService(AppDbContext db) => _db = db;
 
-    public async Task<List<EngineerSummaryDto>> GetAllAsync()
+    public async Task<PagedResult<EngineerSummaryDto>> GetAllAsync(PaginationQuery pagination)
     {
-        var engineers = await _db.Users
+        var query = _db.Users
             .AsNoTracking()
             .Include(u => u.Reviews)
             .Include(u => u.City)
-            .Where(u => u.UserType == UserType.Engineer && u.IsActive)
-            .OrderBy(u => u.NameEn)
-            .ToListAsync();
+            .Where(u => u.UserType == UserType.Engineer && u.IsActive);
 
-        return engineers.Select(MapSummary).ToList();
+        if (pagination.IsTrusted.HasValue && pagination.IsTrusted.Value)
+        {
+            query = query.Where(u => u.IsTrusted);
+        }
+        else if (pagination.IsTrusted.HasValue && !pagination.IsTrusted.Value)
+        {
+            query = query.Where(u => !u.IsTrusted);
+        }
+        var page = await query
+            .OrderBy(u => u.NameEn)
+            .ThenBy(u => u.Id)
+            .ToPagedResultAsync(pagination);
+
+        return page.Map(MapSummary);
     }
 
     public async Task<EngineerProfileDto?> GetProfileAsync(int id, string lang = "en")
@@ -68,6 +80,7 @@ public class EngineerService
         Country         = engineer.Country,
         ProfileImageUrl = engineer.ProfileImageUrl,
         CoverImageUrl   = engineer.CoverImageUrl,
+        IsFavourite     = engineer.IsFavourite,
         Projects        = engineer.Projects.Select(p => new ProjectDto
         {
             Id           = p.Id,

@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using test.Data;
 using test.DTOs;
+using test.Helpers;
 using test.Models;
 
 namespace test.Services;
@@ -11,13 +12,15 @@ public class ReviewService
 
     public ReviewService(AppDbContext db) => _db = db;
 
-    public async Task<List<ReviewDto>> GetUserReviewsAsync(int userId)
+    public async Task<PagedResult<ReviewDto>> GetUserReviewsAsync(int userId, PaginationQuery pagination)
     {
-        var reviews = await _db.Reviews
+        var page = await _db.Reviews
             .Include(r => r.Reviewer)
             .Where(r => r.UserId == userId)
-            .ToListAsync();
-        return reviews.Select(Map).ToList();
+            .OrderByDescending(r => r.CreatedAt)
+            .ThenByDescending(r => r.Id)
+            .ToPagedResultAsync(pagination);
+        return page.Map(Map);
     }
 
     public async Task<ReviewDto?> GetByIdAsync(int id)

@@ -1,4 +1,4 @@
-@model List<FinishHub.Admin.Models.ProjectViewModel>
+@model FinishHub.Admin.Models.PagedResult<FinishHub.Admin.Models.ProjectViewModel>
 
 @{
     ViewData["Title"] = "Projects";
@@ -38,15 +38,17 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Model.Count == 0)
+                @if (Model.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="7" class="text-center text-muted py-4">No projects have been added yet.</td>
+                        <td colspan="7" class="text-center text-muted py-4">
+                            @(Model.TotalCount == 0 ? "No projects have been added yet." : "This page is empty.")
+                        </td>
                     </tr>
                 }
                 else
                 {
-                    foreach (var project in Model)
+                    foreach (var project in Model.Items)
                     {
                         <tr>
                             <td>@project.UserName</td>
@@ -68,6 +70,8 @@
                                 <form asp-action="SetFeatured" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@project.Id" />
                                     <input type="hidden" name="isFeatured" value="@((!project.IsFeatured).ToString().ToLowerInvariant())" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                     <button type="submit" class="btn btn-sm @(project.IsFeatured ? "btn-outline-secondary" : "btn-outline-success")">
                                         @(project.IsFeatured ? "Unmark Featured" : "Mark Featured")
                                     </button>
@@ -80,3 +84,5 @@
         </table>
     </div>
 </div>
+
+@{await Html.RenderPartialAsync("_Pager", FinishHub.Admin.Models.PagerViewModel.From(Model));}

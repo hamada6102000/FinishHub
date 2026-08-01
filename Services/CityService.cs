@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using test.Data;
 using test.DTOs;
+using test.Helpers;
 using test.Models;
 
 namespace test.Services;
@@ -32,13 +33,13 @@ public class CityService
         return (CityResult.Success, "City created.", Map(city, lang));
     }
 
-    public async Task<List<CityDto>> GetAllAsync(string lang = "en")
+    public async Task<PagedResult<CityDto>> GetAllAsync(PaginationQuery pagination, string lang = "en")
     {
-        var cities = await _db.Cities.AsNoTracking()
+        var page = await _db.Cities.AsNoTracking()
             .OrderByDescending(c => c.IsPinned)
             .ThenBy(c => c.NameEn)
-            .ToListAsync();
-        return cities.Select(c => Map(c, lang)).ToList();
+            .ToPagedResultAsync(pagination);
+        return page.Map(c => Map(c, lang));
     }
 
     public async Task<CityDto?> GetByIdAsync(int id, string lang = "en")

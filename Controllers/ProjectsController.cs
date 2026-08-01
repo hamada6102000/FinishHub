@@ -22,11 +22,11 @@ public class ProjectsController : ControllerBase
     private string GetLang() =>
         Request.Headers.AcceptLanguage.ToString().StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en";
 
-    /// <summary>Get all projects.</summary>
+    /// <summary>Get a page of projects.</summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll() =>
-        Ok(ApiResponse.Success(await _projects.GetAllAsync(GetLang())));
+    public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _projects.GetAllAsync(pagination, GetLang())));
 
     /// <summary>Get a project by id.</summary>
     [HttpGet("{id}")]
@@ -38,11 +38,11 @@ public class ProjectsController : ControllerBase
         return Ok(ApiResponse.Success(dto));
     }
 
-    /// <summary>Get all projects for a specific user.</summary>
+    /// <summary>Get a page of projects for a specific user.</summary>
     [HttpGet("user/{userId}")]
     [AllowAnonymous]
-    public async Task<IActionResult> GetUserProjects(int userId) =>
-        Ok(ApiResponse.Success(await _projects.GetUserProjectsAsync(userId, GetLang())));
+    public async Task<IActionResult> GetUserProjects(int userId, [FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _projects.GetUserProjectsAsync(userId, pagination, GetLang())));
 
     /// <summary>Create a new project (authenticated user).</summary>
     [HttpPost]

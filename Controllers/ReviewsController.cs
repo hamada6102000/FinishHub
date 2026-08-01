@@ -18,11 +18,11 @@ public class ReviewsController : ControllerBase
     private int CurrentUserId => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? User.FindFirstValue("sub")!);
 
-    /// <summary>Get all reviews for the current user.</summary>
+    /// <summary>Get a page of reviews for the current user.</summary>
     [HttpGet("user")]
     [Authorize]
-    public async Task<IActionResult> GetUserReviews() =>
-        Ok(ApiResponse.Success(await _reviews.GetUserReviewsAsync(CurrentUserId)));
+    public async Task<IActionResult> GetUserReviews([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _reviews.GetUserReviewsAsync(CurrentUserId, pagination)));
 
     /// <summary>Get a review by id.</summary>
     [HttpGet("{id}")]

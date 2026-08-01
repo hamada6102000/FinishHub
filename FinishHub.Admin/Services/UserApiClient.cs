@@ -20,11 +20,11 @@ public class UserApiClient : IUserApiClient
         _logger = logger;
     }
 
-    public async Task<(bool success, string message, List<UserViewModel> data)> GetAllAsync()
+    public async Task<(bool success, string message, PagedResult<UserViewModel> data)> GetAllAsync(int page, int pageSize)
     {
-        var response = await _http.GetAsync("api/users");
-        var (success, message, data) = await ReadEnvelopeAsync<List<UserViewModel>>(response);
-        return (success, message, data ?? new());
+        var response = await _http.GetAsync($"api/users?page={page}&pageSize={pageSize}");
+        var (success, message, data) = await ReadEnvelopeAsync<PagedResult<UserViewModel>>(response);
+        return (success, message, data ?? PagedResult<UserViewModel>.Empty(page, pageSize));
     }
 
     public async Task<(bool success, string message)> SetTrustedAsync(int id, bool isTrusted)

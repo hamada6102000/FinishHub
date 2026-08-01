@@ -17,10 +17,21 @@ public class ProjectService
         _env = env;
     }
 
-    public async Task<List<ProjectDto>> GetAllAsync(string lang = "en")
+    public async Task<PagedResult<ProjectDto>> GetAllAsync(PaginationQuery pagination, string lang = "en")
     {
-        var projects = await _db.Projects.Include(p => p.Media).Include(p => p.User).ToListAsync();
-        return projects.Select(p => Map(p, lang)).ToList();
+        var query = _db.Projects
+            .Include(p => p.Media)
+            .Include(p => p.User)
+            .AsQueryable();
+
+        if (pagination.IsFeatured.HasValue)
+            query = query.Where(p => p.IsFeatured == pagination.IsFeatured.Value);
+
+        var page = await query
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
+            .ToPagedResultAsync(pagination);
+        return page.Map(p => Map(p, lang));
     }
 
     public async Task<ProjectDto?> GetByIdAsync(int id, string lang = "en")
@@ -29,10 +40,16 @@ public class ProjectService
         return project == null ? null : Map(project, lang);
     }
 
-    public async Task<List<ProjectDto>> GetUserProjectsAsync(int userId, string lang = "en")
+    public async Task<PagedResult<ProjectDto>> GetUserProjectsAsync(int userId, PaginationQuery pagination, string lang = "en")
     {
-        var projects = await _db.Projects.Include(p => p.Media).Include(p => p.User).Where(p => p.UserId == userId).ToListAsync();
-        return projects.Select(p => Map(p, lang)).ToList();
+        var page = await _db.Projects
+            .Include(p => p.Media)
+            .Include(p => p.User)
+            .Where(p => p.UserId == userId)
+            .OrderByDescending(p => p.CreatedAt)
+            .ThenByDescending(p => p.Id)
+            .ToPagedResultAsync(pagination);
+        return page.Map(p => Map(p, lang));
     }
 
     public async Task<ProjectDto> CreateAsync(int userId, CreateProjectRequest req, string lang = "en")

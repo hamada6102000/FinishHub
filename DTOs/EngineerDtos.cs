@@ -35,6 +35,7 @@ public class EngineerProfileDto
     public string? Country { get; set; }
     public string? ProfileImageUrl { get; set; }
     public string? CoverImageUrl { get; set; }
+    public bool IsFavourite { get; set; }
     public List<ProjectDto> Projects { get; set; } = new();
     public PortfolioDto? Portfolio { get; set; }
     public List<ReviewDto> Reviews { get; set; } = new();

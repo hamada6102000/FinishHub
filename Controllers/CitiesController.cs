@@ -30,10 +30,10 @@ public class CitiesController : ControllerBase
         };
     }
 
-    /// <summary>Get all cities ordered alphabetically.</summary>
+    /// <summary>Get a page of cities ordered alphabetically.</summary>
     [HttpGet]
-    public async Task<IActionResult> GetAll() =>
-        Ok(ApiResponse.Success(await _cities.GetAllAsync(GetLang())));
+    public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _cities.GetAllAsync(pagination, GetLang())));
 
     /// <summary>Get a single city by id.</summary>
     [HttpGet("{id}")]

@@ -2,13 +2,15 @@
 
 @{
     ViewData["Title"] = "Edit City";
+    var currentPage = ViewData["Page"] as int? ?? 1;
+    var pageSize    = ViewData["PageSize"] as int? ?? FinishHub.Admin.Models.PagedResult<object>.DefaultPageSize;
 }
 
 <h1 class="h3 mb-3">Edit City</h1>
 
 <div class="card shadow-sm" style="max-width: 480px;">
     <div class="card-body">
-        <form asp-action="Edit" asp-route-id="@Model.Id" method="post">
+        <form asp-action="Edit" asp-route-id="@Model.Id" asp-route-page="@currentPage" asp-route-pageSize="@pageSize" method="post">
             <input type="hidden" asp-for="Id" />
             <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
 
@@ -30,7 +32,7 @@
             </div>
 
             <button type="submit" class="btn btn-primary">Save</button>
-            <a asp-action="Index" class="btn btn-link">Cancel</a>
+            <a asp-action="Index" asp-route-page="@currentPage" asp-route-pageSize="@pageSize" class="btn btn-link">Cancel</a>
         </form>
     </div>
 </div>

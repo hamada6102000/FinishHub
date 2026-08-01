@@ -15,11 +15,11 @@ public class ProjectApiClient : IProjectApiClient
 
     public ProjectApiClient(HttpClient http) => _http = http;
 
-    public async Task<List<ProjectViewModel>> GetAllAsync()
+    public async Task<PagedResult<ProjectViewModel>> GetAllAsync(int page, int pageSize)
     {
-        var response = await _http.GetAsync("api/projects");
-        var (_, _, data) = await ReadEnvelopeAsync<List<ProjectViewModel>>(response);
-        return data ?? new();
+        var response = await _http.GetAsync($"api/projects?page={page}&pageSize={pageSize}");
+        var (_, _, data) = await ReadEnvelopeAsync<PagedResult<ProjectViewModel>>(response);
+        return data ?? PagedResult<ProjectViewModel>.Empty(page, pageSize);
     }
 
     public async Task<(bool success, string message)> SetFeaturedAsync(int id, bool isFeatured)

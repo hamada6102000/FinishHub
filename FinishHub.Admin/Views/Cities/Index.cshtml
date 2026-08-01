@@ -1,4 +1,4 @@
-@model List<FinishHub.Admin.Models.CityViewModel>
+@model FinishHub.Admin.Models.PagedResult<FinishHub.Admin.Models.CityViewModel>
 
 @{
     ViewData["Title"] = "Cities";
@@ -6,7 +6,7 @@
 
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1 class="h3 mb-0">Cities</h1>
-    <a asp-action="Create" class="btn btn-primary">+ Add City</a>
+    <a asp-action="Create" asp-route-pageSize="@Model.PageSize" class="btn btn-primary">+ Add City</a>
 </div>
 
 @if (TempData["Success"] != null)
@@ -37,15 +37,17 @@
                 </tr>
             </thead>
             <tbody>
-                @if (Model.Count == 0)
+                @if (Model.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="5" class="text-center text-muted py-4">No cities have been added yet.</td>
+                        <td colspan="5" class="text-center text-muted py-4">
+                            @(Model.TotalCount == 0 ? "No cities have been added yet." : "This page is empty.")
+                        </td>
                     </tr>
                 }
                 else
                 {
-                    foreach (var city in Model)
+                    foreach (var city in Model.Items)
                     {
                         <tr>
                             <td>@city.NameEn</td>
@@ -65,13 +67,18 @@
                                 <form asp-action="SetPinned" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@city.Id" />
                                     <input type="hidden" name="isPinned" value="@((!city.IsPinned).ToString().ToLowerInvariant())" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                     <button type="submit" class="btn btn-sm @(city.IsPinned ? "btn-outline-secondary" : "btn-outline-success")">
                                         @(city.IsPinned ? "Unpin" : "Pin")
                                     </button>
                                 </form>
-                                <a asp-action="Edit" asp-route-id="@city.Id" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                <a asp-action="Edit" asp-route-id="@city.Id" asp-route-page="@Model.Page"
+                                   asp-route-pageSize="@Model.PageSize" class="btn btn-sm btn-outline-secondary">Edit</a>
                                 <form asp-action="Delete" asp-route-id="@city.Id" method="post" class="d-inline"
                                       onsubmit="return confirm('Delete city &quot;@city.NameEn&quot;? This cannot be undone.');">
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
                                     <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
                                 </form>
                             </td>
@@ -82,3 +89,5 @@
         </table>
     </div>
 </div>
+
+@{await Html.RenderPartialAsync("_Pager", FinishHub.Admin.Models.PagerViewModel.From(Model));}

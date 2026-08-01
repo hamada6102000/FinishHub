@@ -28,11 +28,11 @@ public class UsersController : ControllerBase
         return Ok(ApiResponse.Success(dto));
     }
 
-    /// <summary>Get all users (admin use).</summary>
+    /// <summary>Get a page of users (admin use).</summary>
     [HttpGet]
     [AllowAnonymous]
-    public async Task<IActionResult> GetAll() =>
-        Ok(ApiResponse.Success(await _users.GetAllAsync()));
+    public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
+        Ok(ApiResponse.Success(await _users.GetAllAsync(pagination)));
 
     /// <summary>Update the logged-in user's profile.</summary>
     [HttpPut("me")]
