@@ -49,7 +49,25 @@ public class EngineerService
         return engineer == null ? null : Map(engineer, lang);
     }
 
-    private static EngineerSummaryDto MapSummary(User engineer) => new()
+    /// <summary>Builds the filtered, unordered queryable used by Explore search.</summary>
+    internal IQueryable<User> BuildExploreQuery(string? keyword, int? cityId)
+    {
+        var query = _db.Users
+            .AsNoTracking()
+            .Include(u => u.Reviews)
+            .Include(u => u.City)
+            .Where(u => u.UserType == UserType.Engineer && u.IsActive);
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+            query = query.Where(u => u.NameEn.Contains(keyword) || u.NameAr.Contains(keyword));
+
+        if (cityId.HasValue)
+            query = query.Where(u => u.CityId == cityId.Value);
+
+        return query;
+    }
+
+    internal static EngineerSummaryDto MapSummary(User engineer) => new()
     {
         Id              = engineer.Id,
         NameAr          = engineer.NameAr,

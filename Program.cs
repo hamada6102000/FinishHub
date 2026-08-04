@@ -48,6 +48,7 @@ builder.Services.AddScoped<EngineerService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CityService>();
 builder.Services.AddScoped<DesignConversationService>();
+builder.Services.AddScoped<ExploreService>();
 
 // ── FluentValidation ──────────────────────────────────────────────────────
 builder.Services.AddFluentValidationAutoValidation();

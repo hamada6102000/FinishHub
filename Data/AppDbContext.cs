@@ -12,6 +12,7 @@ public class AppDbContext : DbContext
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMedia> ProjectMedia => Set<ProjectMedia>();
+    public DbSet<ProjectMaterial> ProjectMaterials => Set<ProjectMaterial>();
     public DbSet<Portfolio> Portfolios => Set<Portfolio>();
     public DbSet<PortfolioMedia> PortfolioMedia => Set<PortfolioMedia>();
     public DbSet<Review> Reviews => Set<Review>();
@@ -45,6 +46,11 @@ public class AppDbContext : DbContext
              .WithMany(u => u.Projects)
              .HasForeignKey(p => p.UserId)
              .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(p => p.City)
+             .WithMany()
+             .HasForeignKey(p => p.CityId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<ProjectMedia>(e =>
@@ -52,6 +58,14 @@ public class AppDbContext : DbContext
             e.Property(m => m.MediaType).HasConversion<string>();
             e.HasOne(m => m.Project)
              .WithMany(p => p.Media)
+             .HasForeignKey(m => m.ProjectId)
+             .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProjectMaterial>(e =>
+        {
+            e.HasOne(m => m.Project)
+             .WithMany(p => p.Materials)
              .HasForeignKey(m => m.ProjectId)
              .OnDelete(DeleteBehavior.Cascade);
         });

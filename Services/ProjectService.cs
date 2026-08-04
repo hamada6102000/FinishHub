@@ -21,7 +21,9 @@ public class ProjectService
     {
         var query = _db.Projects
             .Include(p => p.Media)
+            .Include(p => p.Materials)
             .Include(p => p.User)
+            .Include(p => p.City)
             .AsQueryable();
 
         if (pagination.IsFeatured.HasValue)
@@ -36,7 +38,7 @@ public class ProjectService
 
     public async Task<ProjectDto?> GetByIdAsync(int id, string lang = "en")
     {
-        var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
+        var project = await _db.Projects.Include(p => p.Media).Include(p => p.Materials).Include(p => p.User).Include(p => p.City).FirstOrDefaultAsync(p => p.Id == id);
         return project == null ? null : Map(project, lang);
     }
 
@@ -44,7 +46,9 @@ public class ProjectService
     {
         var page = await _db.Projects
             .Include(p => p.Media)
+            .Include(p => p.Materials)
             .Include(p => p.User)
+            .Include(p => p.City)
             .Where(p => p.UserId == userId)
             .OrderByDescending(p => p.CreatedAt)
             .ThenByDescending(p => p.Id)
@@ -59,29 +63,51 @@ public class ProjectService
             UserId       = userId,
             Title        = req.Title,
             Location     = req.Location,
+            CityId       = req.CityId,
             PropertyType = req.PropertyType,
             Description  = req.Description,
+            Area         = req.Area,
+            Timeline     = req.Timeline,
+            Budget       = req.Budget,
+            Category     = req.Category,
         };
         _db.Projects.Add(project);
         await _db.SaveChangesAsync();
 
         await SaveMediaAsync(project.Id, req.Images, req.Videos);
+        SaveMaterials(project.Id, req.Materials);
         await _db.SaveChangesAsync();
 
-        return Map((await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstAsync(p => p.Id == project.Id)), lang);
+        return Map((await _db.Projects.Include(p => p.Media).Include(p => p.Materials).Include(p => p.User).Include(p => p.City).FirstAsync(p => p.Id == project.Id)), lang);
     }
 
     public async Task<(bool success, ProjectDto? dto)> UpdateAsync(int id, int userId, UpdateProjectRequest req, string lang = "en")
     {
-        var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
+        var project = await _db.Projects.Include(p => p.Media).Include(p => p.Materials).Include(p => p.User).Include(p => p.City).FirstOrDefaultAsync(p => p.Id == id);
         if (project == null || project.UserId != userId) return (false, null);
 
         if (req.Title       != null) project.Title        = req.Title;
         if (req.Location    != null) project.Location     = req.Location;
+        if (req.CityId.HasValue)     project.CityId       = req.CityId.Value;
         if (req.Description != null) project.Description  = req.Description;
+        if (req.Area        != null) project.Area         = req.Area;
+        if (req.Timeline    != null) project.Timeline     = req.Timeline;
+        if (req.Budget      != null) project.Budget       = req.Budget;
+        if (req.Category    != null) project.Category     = req.Category;
         if (req.PropertyType.HasValue) project.PropertyType = req.PropertyType.Value;
 
+        if (req.Materials != null)
+        {
+            _db.ProjectMaterials.RemoveRange(project.Materials);
+            project.Materials.Clear();
+            SaveMaterials(project.Id, req.Materials);
+        }
+
         await _db.SaveChangesAsync();
+
+        if (req.Materials != null)
+            await _db.Entry(project).Collection(p => p.Materials).LoadAsync();
+
         return (true, Map(project, lang));
     }
 
@@ -108,9 +134,17 @@ public class ProjectService
             _db.ProjectMedia.Add(new ProjectMedia { ProjectId = projectId, Url = url, MediaType = MediaType.Video });
     }
 
+    private void SaveMaterials(int projectId, List<ProjectMaterialRequest>? materials)
+    {
+        if (materials == null) return;
+
+        foreach (var material in materials)
+            _db.ProjectMaterials.Add(new ProjectMaterial { ProjectId = projectId, MaterialName = material.MaterialName, Description = material.Description });
+    }
+
     public async Task<ProjectDto?> SetFeaturedAsync(int id, bool isFeatured, string lang = "en")
     {
-        var project = await _db.Projects.Include(p => p.Media).Include(p => p.User).FirstOrDefaultAsync(p => p.Id == id);
+        var project = await _db.Projects.Include(p => p.Media).Include(p => p.Materials).Include(p => p.User).Include(p => p.City).FirstOrDefaultAsync(p => p.Id == id);
         if (project == null) return null;
 
         project.IsFeatured = isFeatured;
@@ -118,17 +152,45 @@ public class ProjectService
         return Map(project, lang);
     }
 
-    private static ProjectDto Map(Project p, string lang) => new()
+    /// <summary>Builds the filtered, unordered queryable used by both the plain project list and Explore search.</summary>
+    internal IQueryable<Project> BuildExploreQuery(string? keyword, int? cityId, PropertyType? propertyType)
+    {
+        var query = _db.Projects
+            .Include(p => p.Media)
+            .Include(p => p.Materials)
+            .Include(p => p.User)
+            .Include(p => p.City)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(keyword))
+            query = query.Where(p => p.Title.Contains(keyword));
+
+        if (cityId.HasValue)
+            query = query.Where(p => p.CityId == cityId.Value);
+
+        if (propertyType.HasValue)
+            query = query.Where(p => p.PropertyType == propertyType.Value);
+
+        return query;
+    }
+
+    internal static ProjectDto Map(Project p, string lang) => new()
     {
         Id           = p.Id,
         UserId       = p.UserId,
         UserName     = lang == "ar" ? (p.User?.NameAr ?? string.Empty) : (p.User?.NameEn ?? string.Empty),
         Title        = p.Title,
         Location     = p.Location,
+        City         = p.City?.NameEn,
         PropertyType = p.PropertyType,
         Description  = p.Description,
+        Area         = p.Area,
+        Timeline     = p.Timeline,
+        Budget       = p.Budget,
+        Category     = p.Category,
         IsFeatured   = p.IsFeatured,
         CreatedAt    = p.CreatedAt,
         Media        = p.Media.Select(m => new ProjectMediaDto { Id = m.Id, Url = m.Url, MediaType = m.MediaType }).ToList(),
+        Materials    = p.Materials.Select(m => new ProjectMaterialDto { Id = m.Id, MaterialName = m.MaterialName, Description = m.Description }).ToList(),
     };
 }
