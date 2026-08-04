@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.Mvc;
+using test.Helpers;
 using test.Models;
 
 namespace test.DTOs;
@@ -15,6 +17,7 @@ public class CreateProjectRequest
     public string? Timeline { get; set; }
     public string? Budget { get; set; }
     public string? Category { get; set; }
+    [ModelBinder(BinderType = typeof(JsonFormDataModelBinder))]
     public List<ProjectMaterialRequest>? Materials { get; set; }
     public List<IFormFile>? Images { get; set; }
     public List<IFormFile>? Videos { get; set; }
