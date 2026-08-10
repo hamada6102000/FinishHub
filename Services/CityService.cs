@@ -35,7 +35,11 @@ public class CityService
 
     public async Task<PagedResult<CityDto>> GetAllAsync(PaginationQuery pagination, string lang = "en")
     {
-        var page = await _db.Cities.AsNoTracking()
+        var query = _db.Cities.AsNoTracking().AsQueryable();
+        if (pagination.IsPinned == true)
+            query = query.Where(c => c.IsPinned);
+
+        var page = await query
             .OrderByDescending(c => c.IsPinned)
             .ThenBy(c => c.NameEn)
             .ToPagedResultAsync(pagination);

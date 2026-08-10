@@ -36,6 +36,10 @@ public class PaginationQuery
     [FromQuery(Name = "isFeatured")]
     public bool? IsFeatured { get; set; }
 
+    /// <summary>Optional filter for pinned cities. If true, returns only pinned cities.</summary>
+    [FromQuery(Name = "isPinned")]
+    public bool? IsPinned { get; set; }
+
     /// <summary>If true, orders results by rate descending instead of the default (most recent first).</summary>
     [FromQuery(Name = "topRated")]
     public bool? TopRated { get; set; }
