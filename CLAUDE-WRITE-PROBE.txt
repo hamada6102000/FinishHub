@@ -1,0 +1,2 @@
+If you can see this file in C:\Users\hm245\source\repos\test then the bridge write worked.
+Written at 23:14 by Claude, session 01DqQNoNQJ9fcyciJNpTfkYd.

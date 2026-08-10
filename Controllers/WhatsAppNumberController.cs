@@ -13,6 +13,7 @@ namespace test.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class WhatsAppNumberController : ControllerBase
 {
     private readonly WhatsAppNumberService _whatsAppNumbers;

@@ -42,6 +42,9 @@ public class WhatsAppNumberApiClient : IWhatsAppNumberApiClient
 
     private static async Task<(bool success, string message, T? data)> ReadEnvelopeAsync<T>(HttpResponseMessage response)
     {
+        if (response.StatusCode is HttpStatusCode.Unauthorized or HttpStatusCode.Forbidden)
+            return (false, "The API rejected the request as unauthorised. Set ApiSettings:AccessToken in the Dashboard configuration.", default);
+
         try
         {
             var envelope = await response.Content.ReadFromJsonAsync<ApiEnvelope<T>>(JsonOptions);
