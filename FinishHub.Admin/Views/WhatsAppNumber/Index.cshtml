@@ -1,0 +1,83 @@
+@model FinishHub.Admin.Models.WhatsAppNumberViewModel
+
+@{
+    ViewData["Title"] = "WhatsApp Number";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">WhatsApp Number</h1>
+    @if (Model == null)
+    {
+        <a asp-action="Create" class="btn btn-primary">+ Add WhatsApp Number</a>
+    }
+    else
+    {
+        <a asp-action="Edit" class="btn btn-primary">Edit</a>
+    }
+</div>
+
+<div class="alert alert-info" role="alert">
+    The solution supports <strong>only one</strong> WhatsApp number. It applies to the whole
+    application &mdash; it is not per user and not per project. Once added it can be updated,
+    but it cannot be deleted, and must be start with the country code , for example EGY +201150123456
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+@if (Model == null)
+{
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <p class="text-muted mb-3">No WhatsApp number has been configured yet.</p>
+            <a asp-action="Create" class="btn btn-primary">+ Add WhatsApp Number</a>
+        </div>
+    </div>
+}
+else
+{
+    <div class="card shadow-sm" style="max-width: 560px;">
+        <div class="card-body p-0">
+            <table class="table mb-0 align-middle">
+                <tbody>
+                    <tr>
+                        <th scope="row" class="w-50">Phone number</th>
+                        <td dir="ltr">@Model.PhoneNumber</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Created date</th>
+                        <td>@Model.CreatedAt.ToString("yyyy-MM-dd HH:mm")</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">Last updated date</th>
+                        <td>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                @Model.UpdatedAt.Value.ToString("yyyy-MM-dd HH:mm")
+                            }
+                            else
+                            {
+                                <span class="text-muted">Never updated</span>
+                            }
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="card-footer bg-white text-end">
+            <a asp-action="Edit" class="btn btn-sm btn-outline-secondary">Edit</a>
+        </div>
+    </div>
+}

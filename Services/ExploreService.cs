@@ -28,7 +28,7 @@ public class ExploreService
 
     private async Task<PagedResult<ExploreItemDto>> SearchEngineersOnlyAsync(ExploreQuery query, int? cityId)
     {
-        var page = await OrderEngineers(_engineers.BuildExploreQuery(query.Keyword, cityId), query.Sort)
+        var page = await OrderEngineers(_engineers.BuildExploreQuery(query.Keyword, cityId, query.IncludeInactive), query.Sort)
             .ToPagedResultAsync(query);
 
         return page.Map(u => new ExploreItemDto { Type = "Engineer", Engineer = EngineerService.MapSummary(u) });
@@ -36,7 +36,7 @@ public class ExploreService
 
     private async Task<PagedResult<ExploreItemDto>> SearchProjectsOnlyAsync(ExploreQuery query, int? cityId, string lang)
     {
-        var page = await OrderProjects(_projects.BuildExploreQuery(query.Keyword, cityId, query.PropertyType), query.Sort)
+        var page = await OrderProjects(_projects.BuildExploreQuery(query.Keyword, cityId, query.PropertyType, query.IncludeInactive), query.Sort)
             .ToPagedResultAsync(query);
 
         return page.Map(p => new ExploreItemDto { Type = "Project", Project = ProjectService.Map(p, lang) });
@@ -49,8 +49,8 @@ public class ExploreService
     /// </summary>
     private async Task<PagedResult<ExploreItemDto>> SearchAllAsync(ExploreQuery query, int? cityId, string lang)
     {
-        var engineerQuery = _engineers.BuildExploreQuery(query.Keyword, cityId);
-        var projectQuery  = _projects.BuildExploreQuery(query.Keyword, cityId, query.PropertyType);
+        var engineerQuery = _engineers.BuildExploreQuery(query.Keyword, cityId, query.IncludeInactive);
+        var projectQuery  = _projects.BuildExploreQuery(query.Keyword, cityId, query.PropertyType, query.IncludeInactive);
 
         var engineerTotal = await engineerQuery.CountAsync();
         var projectTotal  = await projectQuery.CountAsync();

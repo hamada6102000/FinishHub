@@ -43,8 +43,8 @@ public class AuthService
                 return (false, "Invalid city selected.", null);
         }
 
-        var profileUrl = await FileUploadHelper.SaveFileAsync(req.ProfileImage, "profiles", _env);
-        var coverUrl   = await FileUploadHelper.SaveFileAsync(req.CoverImage, "covers", _env);
+        var profileUrl = await FileUploadHelper.SaveFileAsync(req.ProfileImage, "profiles", _env) ?? string.Empty;
+        var coverUrl   = await FileUploadHelper.SaveFileAsync(req.CoverImage, "covers", _env) ?? string.Empty;
 
         var user = new User
         {
@@ -81,6 +81,10 @@ public class AuthService
         if (result == PasswordVerificationResult.Failed)
             return (false, "Invalid credentials.", null);
 
+        // Checked after the password so the response never reveals whether an account exists.
+        if (!user.IsActive)
+            return (false, "This account has been deactivated. Please contact support.", null);
+
         return (true, "Login successful.", BuildAuthResponse(user));
     }
 
@@ -116,6 +120,10 @@ public class AuthService
             };
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
+        }
+        else if (!user.IsActive)
+        {
+            return (false, "This account has been deactivated. Please contact support.", null);
         }
         else if (string.IsNullOrEmpty(user.GoogleId))
         {

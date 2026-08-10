@@ -13,12 +13,12 @@ public class RegisterRequest
     public string Password { get; set; } = string.Empty;
     public int? CityId { get; set; }
     public string? Country { get; set; }
-    public IFormFile? ProfileImage { get; set; }
-    public IFormFile? CoverImage { get; set; }
+    public IFormFile ProfileImage { get; set; } = null!;
+    public IFormFile CoverImage { get; set; } = null!;
     public int? TotalExperience { get; set; }
     public UserType UserType { get; set; }
     public string? Bio { get; set; }
-    public string? Position { get; set; }
+    public string Position { get; set; } = string.Empty;
 }
 
 public class LoginRequest
@@ -67,6 +67,11 @@ public class SetTrustedRequest
     public bool IsTrusted { get; set; }
 }
 
+public class SetUserActiveRequest
+{
+    public bool IsActive { get; set; }
+}
+
 public class UpdateProfileRequest
 {
     public string? NameAr { get; set; }
@@ -91,12 +96,12 @@ public class UserDto
     public int? CityId { get; set; }
     public string? CityName { get; set; }
     public string? Country { get; set; }
-    public string? ProfileImageUrl { get; set; }
-    public string? CoverImageUrl { get; set; }
+    public string ProfileImageUrl { get; set; } = string.Empty;
+    public string CoverImageUrl { get; set; } = string.Empty;
     public int? TotalExperience { get; set; }
     public UserType UserType { get; set; }
     public string? Bio { get; set; }
-    public string? Position { get; set; }
+    public string Position { get; set; } = string.Empty;
     public bool IsActive { get; set; }
     public bool IsFavourite { get; set; }
     public bool IsTrusted { get; set; }

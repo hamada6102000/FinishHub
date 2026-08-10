@@ -49,6 +49,7 @@ builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CityService>();
 builder.Services.AddScoped<DesignConversationService>();
 builder.Services.AddScoped<ExploreService>();
+builder.Services.AddScoped<WhatsAppNumberService>();
 
 // ── FluentValidation ──────────────────────────────────────────────────────
 builder.Services.AddFluentValidationAutoValidation();

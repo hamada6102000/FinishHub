@@ -22,7 +22,10 @@ public class ProjectsController : ControllerBase
     private string GetLang() =>
         Request.Headers.AcceptLanguage.ToString().StartsWith("ar", StringComparison.OrdinalIgnoreCase) ? "ar" : "en";
 
-    /// <summary>Get a page of projects.</summary>
+    /// <summary>
+    /// Get a page of projects. Returns active projects owned by active users only; the
+    /// Dashboard passes includeInactive=true to also get deactivated projects for management.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
@@ -71,6 +74,15 @@ public class ProjectsController : ControllerBase
         return Ok(ApiResponse.Success(null, "Project deleted."));
     }
 
+    /// <summary>Rate a project (authenticated user).</summary>
+    [HttpPost("{id}/rate")]
+    public async Task<IActionResult> Rate(int id, [FromBody] RateProjectRequest req)
+    {
+        var (success, message, dto) = await _projects.RateAsync(id, CurrentUserId, req.Value, GetLang());
+        if (!success) return BadRequest(ApiResponse.Fail(message));
+        return Ok(ApiResponse.Success(dto, message));
+    }
+
     /// <summary>Mark or unmark a project as featured (admin use).</summary>
     [HttpPatch("{id}/featured")]
     [AllowAnonymous]
@@ -79,5 +91,18 @@ public class ProjectsController : ControllerBase
         var dto = await _projects.SetFeaturedAsync(id, req.IsFeatured, GetLang());
         if (dto == null) return NotFound(ApiResponse.Fail("Project not found."));
         return Ok(ApiResponse.Success(dto, "Project updated."));
+    }
+
+    /// <summary>
+    /// Activate or deactivate a project (admin use). Deactivating hides the project from every
+    /// normal application response but never deletes the record; the call is idempotent.
+    /// </summary>
+    [HttpPatch("{id}/active")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SetActive(int id, [FromBody] SetProjectActiveRequest req)
+    {
+        var dto = await _projects.SetActiveAsync(id, req.IsActive, GetLang());
+        if (dto == null) return NotFound(ApiResponse.Fail("Project not found."));
+        return Ok(ApiResponse.Success(dto, req.IsActive ? "Project activated." : "Project deactivated."));
     }
 }

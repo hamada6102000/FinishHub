@@ -36,6 +36,18 @@ public class PaginationQuery
     [FromQuery(Name = "isFeatured")]
     public bool? IsFeatured { get; set; }
 
+    /// <summary>If true, orders results by rate descending instead of the default (most recent first).</summary>
+    [FromQuery(Name = "topRated")]
+    public bool? TopRated { get; set; }
+
+    /// <summary>
+    /// Dashboard/Admin only. When false (the default) reads return active records only;
+    /// when true both active and inactive records are returned so administrators can
+    /// manage activation status. Normal application clients never send this.
+    /// </summary>
+    [FromQuery(Name = "includeInactive")]
+    public bool IncludeInactive { get; set; }
+
     /// <summary>
     /// Rows to skip for the current page. Internal so it stays out of model binding and
     /// the Swagger contract — clients send only page and pageSize.

@@ -10,12 +10,12 @@ public class User
     public string PasswordHash { get; set; } = string.Empty;
     public int? CityId { get; set; }
     public string? Country { get; set; }
-    public string? ProfileImageUrl { get; set; }
-    public string? CoverImageUrl { get; set; }
+    public string ProfileImageUrl { get; set; } = string.Empty;
+    public string CoverImageUrl { get; set; } = string.Empty;
     public int? TotalExperience { get; set; }
     public UserType UserType { get; set; }
     public string? Bio { get; set; }
-    public string? Position { get; set; }
+    public string Position { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
     public bool IsActive { get; set; } = true;

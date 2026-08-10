@@ -12,7 +12,8 @@ public class ProjectsController : Controller
 
     public async Task<IActionResult> Index(int page = 1, int pageSize = PagedResult<ProjectViewModel>.DefaultPageSize)
     {
-        var projects = await _projects.GetAllAsync(page, pageSize);
+        // includeInactive: true — the management screen must show active and inactive projects.
+        var projects = await _projects.GetAllAsync(page, pageSize, includeInactive: true);
         return View(projects);
     }
 
@@ -21,6 +22,15 @@ public class ProjectsController : Controller
     public async Task<IActionResult> SetFeatured(int id, bool isFeatured, int page = 1, int pageSize = PagedResult<ProjectViewModel>.DefaultPageSize)
     {
         var (success, message) = await _projects.SetFeaturedAsync(id, isFeatured);
+        TempData[success ? "Success" : "Error"] = message;
+        return RedirectToAction(nameof(Index), new { page, pageSize });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> SetActive(int id, bool isActive, int page = 1, int pageSize = PagedResult<ProjectViewModel>.DefaultPageSize)
+    {
+        var (success, message) = await _projects.SetActiveAsync(id, isActive);
         TempData[success ? "Success" : "Error"] = message;
         return RedirectToAction(nameof(Index), new { page, pageSize });
     }

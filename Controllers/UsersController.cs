@@ -28,7 +28,10 @@ public class UsersController : ControllerBase
         return Ok(ApiResponse.Success(dto));
     }
 
-    /// <summary>Get a page of users (admin use).</summary>
+    /// <summary>
+    /// Get a page of users. Returns active users only; the Dashboard passes
+    /// includeInactive=true to also get deactivated users for management.
+    /// </summary>
     [HttpGet]
     [AllowAnonymous]
     public async Task<IActionResult> GetAll([FromQuery] PaginationQuery pagination) =>
@@ -52,5 +55,18 @@ public class UsersController : ControllerBase
         var dto = await _users.SetTrustedAsync(id, req.IsTrusted);
         if (dto == null) return NotFound(ApiResponse.Fail("User not found."));
         return Ok(ApiResponse.Success(dto, "User updated."));
+    }
+
+    /// <summary>
+    /// Activate or deactivate a user (admin use). Deactivating hides the user from every
+    /// normal application response but never deletes the record; the call is idempotent.
+    /// </summary>
+    [HttpPatch("{id}/active")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SetActive(int id, [FromBody] SetUserActiveRequest req)
+    {
+        var dto = await _users.SetActiveAsync(id, req.IsActive);
+        if (dto == null) return NotFound(ApiResponse.Fail("User not found."));
+        return Ok(ApiResponse.Success(dto, req.IsActive ? "User activated." : "User deactivated."));
     }
 }

@@ -20,9 +20,9 @@ public class UserApiClient : IUserApiClient
         _logger = logger;
     }
 
-    public async Task<(bool success, string message, PagedResult<UserViewModel> data)> GetAllAsync(int page, int pageSize)
+    public async Task<(bool success, string message, PagedResult<UserViewModel> data)> GetAllAsync(int page, int pageSize, bool includeInactive = true)
     {
-        var response = await _http.GetAsync($"api/users?page={page}&pageSize={pageSize}");
+        var response = await _http.GetAsync($"api/users?page={page}&pageSize={pageSize}&includeInactive={includeInactive.ToString().ToLowerInvariant()}");
         var (success, message, data) = await ReadEnvelopeAsync<PagedResult<UserViewModel>>(response);
         return (success, message, data ?? PagedResult<UserViewModel>.Empty(page, pageSize));
     }
@@ -30,6 +30,13 @@ public class UserApiClient : IUserApiClient
     public async Task<(bool success, string message)> SetTrustedAsync(int id, bool isTrusted)
     {
         var response = await _http.PatchAsJsonAsync($"api/users/{id}/trusted", new { IsTrusted = isTrusted });
+        var (success, message, _) = await ReadEnvelopeAsync<object>(response);
+        return (success, message);
+    }
+
+    public async Task<(bool success, string message)> SetActiveAsync(int id, bool isActive)
+    {
+        var response = await _http.PatchAsJsonAsync($"api/users/{id}/active", new { IsActive = isActive });
         var (success, message, _) = await ReadEnvelopeAsync<object>(response);
         return (success, message);
     }

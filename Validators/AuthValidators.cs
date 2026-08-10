@@ -12,6 +12,11 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.PhoneNumber).NotEmpty().WithMessage("Phone number is required.");
         RuleFor(x => x.Email).NotEmpty().EmailAddress().WithMessage("A valid email is required.");
         RuleFor(x => x.Password).NotEmpty().MinimumLength(6).WithMessage("Password must be at least 6 characters.");
+        RuleFor(x => x.ProfileImage).NotNull().WithMessage("Profile image is required.")
+            .Must(f => f!.Length > 0).WithMessage("Profile image cannot be empty.").When(x => x.ProfileImage != null);
+        RuleFor(x => x.CoverImage).NotNull().WithMessage("Cover image is required.")
+            .Must(f => f!.Length > 0).WithMessage("Cover image cannot be empty.").When(x => x.CoverImage != null);
+        RuleFor(x => x.Position).NotEmpty().WithMessage("Position is required.");
     }
 }
 

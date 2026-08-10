@@ -1,0 +1,34 @@
+@model FinishHub.Admin.Models.WhatsAppNumberFormViewModel
+
+@{
+    ViewData["Title"] = "Edit WhatsApp Number";
+}
+
+<h1 class="h3 mb-3">Edit WhatsApp Number</h1>
+
+<div class="alert alert-info" role="alert">
+    You are updating the one WhatsApp number used across the whole solution, , and must be start with the country code , for example EGY +201150123456
+</div>
+
+<div class="card shadow-sm" style="max-width: 480px;">
+    <div class="card-body">
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="ModelOnly" class="text-danger mb-2"></div>
+
+            <div class="mb-3">
+                <label asp-for="PhoneNumber" class="form-label"></label>
+                <input asp-for="PhoneNumber" class="form-control" dir="ltr"
+                       placeholder="+971501234567" autofocus />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+                <div class="form-text">Include the country code, for example +971501234567.</div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a asp-action="Index" class="btn btn-link">Cancel</a>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

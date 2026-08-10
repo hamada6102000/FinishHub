@@ -4,6 +4,13 @@ namespace FinishHub.Admin.Services;
 
 public interface IUserApiClient
 {
-    Task<(bool success, string message, PagedResult<UserViewModel> data)> GetAllAsync(int page, int pageSize);
+    /// <summary>
+    /// Loads a page of users. The Dashboard passes includeInactive: true so administrators
+    /// see deactivated users too — normal application clients get active users only.
+    /// </summary>
+    Task<(bool success, string message, PagedResult<UserViewModel> data)> GetAllAsync(int page, int pageSize, bool includeInactive = true);
+
     Task<(bool success, string message)> SetTrustedAsync(int id, bool isTrusted);
+
+    Task<(bool success, string message)> SetActiveAsync(int id, bool isActive);
 }

@@ -58,6 +58,8 @@ public class ProjectDto
     public string? Budget { get; set; }
     public string? Category { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; }
+    public double Rate { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<ProjectMediaDto> Media { get; set; } = new();
     public List<ProjectMaterialDto> Materials { get; set; } = new();
@@ -66,6 +68,16 @@ public class ProjectDto
 public class SetFeaturedRequest
 {
     public bool IsFeatured { get; set; }
+}
+
+public class SetProjectActiveRequest
+{
+    public bool IsActive { get; set; }
+}
+
+public class RateProjectRequest
+{
+    public double Value { get; set; }
 }
 
 public class ProjectMediaDto

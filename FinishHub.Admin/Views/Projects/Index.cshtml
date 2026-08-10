@@ -34,6 +34,7 @@
                     <th>Property Type</th>
                     <th>Category</th>
                     <th>Created</th>
+                    <th>Status</th>
                     <th>Featured</th>
                     <th class="text-end">Actions</th>
                 </tr>
@@ -42,7 +43,7 @@
                 @if (Model.Items.Count == 0)
                 {
                     <tr>
-                        <td colspan="8" class="text-center text-muted py-4">
+                        <td colspan="9" class="text-center text-muted py-4">
                             @(Model.TotalCount == 0 ? "No projects have been added yet." : "This page is empty.")
                         </td>
                     </tr>
@@ -51,13 +52,23 @@
                 {
                     foreach (var project in Model.Items)
                     {
-                        <tr>
+                        <tr class="@(project.IsActive ? null : "table-warning")">
                             <td>@project.UserName</td>
                             <td>@project.Title</td>
                             <td>@project.Location</td>
                             <td>@project.PropertyType</td>
                             <td>@project.Category</td>
                             <td>@project.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td>
+                                @if (project.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </td>
                             <td>
                                 @if (project.IsFeatured)
                                 {
@@ -69,6 +80,15 @@
                                 }
                             </td>
                             <td class="text-end">
+                                <form asp-action="SetActive" method="post" class="d-inline">
+                                    <input type="hidden" name="id" value="@project.Id" />
+                                    <input type="hidden" name="isActive" value="@((!project.IsActive).ToString().ToLowerInvariant())" />
+                                    <input type="hidden" name="page" value="@Model.Page" />
+                                    <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                    <button type="submit" class="btn btn-sm @(project.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                        @(project.IsActive ? "Deactivate" : "Activate")
+                                    </button>
+                                </form>
                                 <form asp-action="SetFeatured" method="post" class="d-inline">
                                     <input type="hidden" name="id" value="@project.Id" />
                                     <input type="hidden" name="isFeatured" value="@((!project.IsFeatured).ToString().ToLowerInvariant())" />

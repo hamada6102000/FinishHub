@@ -19,7 +19,7 @@ public class ReviewerInfo
     public int Id { get; set; }
     public string NameAr { get; set; } = string.Empty;
     public string NameEn { get; set; } = string.Empty;
-    public string? ProfileImageUrl { get; set; }
+    public string ProfileImageUrl { get; set; } = string.Empty;
 }
 
 public class ReviewDto

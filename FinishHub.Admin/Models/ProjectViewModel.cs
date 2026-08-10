@@ -14,6 +14,7 @@ public class ProjectViewModel
     public string? Budget { get; set; }
     public string? Category { get; set; }
     public bool IsFeatured { get; set; }
+    public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
     public List<ProjectMediaViewModel> Media { get; set; } = new();
     public List<ProjectMaterialViewModel> Materials { get; set; } = new();

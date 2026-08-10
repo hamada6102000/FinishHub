@@ -28,7 +28,8 @@ public class FavoriteService
         if (user == null || user.UserType != UserType.User)
             return (FavoriteResult.UserIsNotClient, "Only users can add favorites.");
 
-        var engineer = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == engineerId);
+        // Inactive engineers are invisible to the app, so they cannot be favorited either.
+        var engineer = await _db.Users.AsNoTracking().FirstOrDefaultAsync(u => u.Id == engineerId && u.IsActive);
         if (engineer == null)
             return (FavoriteResult.EngineerNotFound, "Engineer not found.");
 
@@ -74,7 +75,9 @@ public class FavoriteService
         var page = await _db.Favorites
             .AsNoTracking()
             .Include(f => f.Engineer).ThenInclude(e => e.City)
-            .Where(f => f.UserId == userId)
+            // Favorites pointing at a deactivated engineer drop out of the list; the Favorite
+            // row itself is kept, so reactivating the engineer restores it.
+            .Where(f => f.UserId == userId && f.Engineer.IsActive)
             .OrderByDescending(f => f.Id)
             .ToPagedResultAsync(pagination);
 

@@ -14,11 +14,13 @@ public class EngineerService
 
     public async Task<PagedResult<EngineerSummaryDto>> GetAllAsync(PaginationQuery pagination)
     {
-        var query = _db.Users
-            .AsNoTracking()
-            .Include(u => u.Reviews)
-            .Include(u => u.City)
-            .Where(u => u.UserType == UserType.Engineer && u.IsActive);
+        var query = UserService.ApplyActiveFilter(
+            _db.Users
+                .AsNoTracking()
+                .Include(u => u.Reviews)
+                .Include(u => u.City)
+                .Where(u => u.UserType == UserType.Engineer),
+            pagination.IncludeInactive);
 
         if (pagination.IsTrusted.HasValue && pagination.IsTrusted.Value)
         {
@@ -36,11 +38,13 @@ public class EngineerService
         return page.Map(MapSummary);
     }
 
-    public async Task<EngineerProfileDto?> GetProfileAsync(int id, string lang = "en")
+    public async Task<EngineerProfileDto?> GetProfileAsync(int id, string lang = "en", bool includeInactive = false)
     {
-        var engineer = await _db.Users
-            .AsNoTracking()
-            .Include(u => u.Projects).ThenInclude(p => p.Media)
+        var query = UserService.ApplyActiveFilter(_db.Users.AsNoTracking(), includeInactive);
+
+        var engineer = await query
+            // Only active projects surface in the profile response.
+            .Include(u => u.Projects.Where(p => p.IsActive)).ThenInclude(p => p.Media)
             .Include(u => u.Portfolio).ThenInclude(p => p!.Media)
             .Include(u => u.Reviews).ThenInclude(r => r.Reviewer)
             .Include(u => u.City)
@@ -50,13 +54,15 @@ public class EngineerService
     }
 
     /// <summary>Builds the filtered, unordered queryable used by Explore search.</summary>
-    internal IQueryable<User> BuildExploreQuery(string? keyword, int? cityId)
+    internal IQueryable<User> BuildExploreQuery(string? keyword, int? cityId, bool includeInactive = false)
     {
-        var query = _db.Users
-            .AsNoTracking()
-            .Include(u => u.Reviews)
-            .Include(u => u.City)
-            .Where(u => u.UserType == UserType.Engineer && u.IsActive);
+        var query = UserService.ApplyActiveFilter(
+            _db.Users
+                .AsNoTracking()
+                .Include(u => u.Reviews)
+                .Include(u => u.City)
+                .Where(u => u.UserType == UserType.Engineer),
+            includeInactive);
 
         if (!string.IsNullOrWhiteSpace(keyword))
             query = query.Where(u => u.NameEn.Contains(keyword) || u.NameAr.Contains(keyword));

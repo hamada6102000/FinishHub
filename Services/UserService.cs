@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using test.Data;
 using test.DTOs;
 using test.Helpers;
+using test.Models;
 
 namespace test.Services;
 
@@ -16,11 +17,20 @@ public class UserService
         _env = env;
     }
 
+    /// <summary>
+    /// Default visibility rule: normal application responses contain active users only.
+    /// Dashboard/Admin callers opt in to inactive records with pagination.IncludeInactive.
+    /// </summary>
+    internal static IQueryable<User> ApplyActiveFilter(IQueryable<User> query, bool includeInactive) =>
+        includeInactive ? query : query.Where(u => u.IsActive);
+
     public async Task<PagedResult<UserDto>> GetAllAsync(PaginationQuery pagination)
     {
-        var page = await _db.Users
-            .AsNoTracking()
-            .Include(u => u.City)
+        var query = ApplyActiveFilter(
+            _db.Users.AsNoTracking().Include(u => u.City),
+            pagination.IncludeInactive);
+
+        var page = await query
             .OrderByDescending(u => u.CreatedAt)
             .ThenByDescending(u => u.Id)
             .ToPagedResultAsync(pagination);
@@ -33,7 +43,8 @@ public class UserService
         var user = await _db.Users
             .AsNoTracking()
             .Include(u => u.City)
-            .Include(u => u.Projects).ThenInclude(p => p.Media)
+            // Only active projects surface in the profile response.
+            .Include(u => u.Projects.Where(p => p.IsActive)).ThenInclude(p => p.Media)
             .Include(u => u.Portfolio).ThenInclude(p => p!.Media)
             .Include(u => u.Reviews).ThenInclude(r => r.Reviewer)
             .FirstOrDefaultAsync(u => u.Id == userId);
@@ -115,6 +126,28 @@ public class UserService
         if (user == null) return null;
 
         user.IsTrusted = isTrusted;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return AuthService.MapUser(user);
+    }
+
+    /// <summary>
+    /// Activates or deactivates a user. Touches only IsActive (and the audit stamp) and never
+    /// deletes the record, so reactivating restores the user exactly as they were. Idempotent:
+    /// setting the value it already has is a no-op that still returns the current state.
+    /// The lookup deliberately ignores the active filter — administrators must be able to
+    /// reach inactive users in order to reactivate them.
+    /// </summary>
+    public async Task<UserDto?> SetActiveAsync(int userId, bool isActive)
+    {
+        var user = await _db.Users.Include(u => u.City).FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null) return null;
+
+        if (user.IsActive == isActive)
+            return AuthService.MapUser(user);
+
+        user.IsActive  = isActive;
         user.UpdatedAt = DateTime.UtcNow;
         await _db.SaveChangesAsync();
 

@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using test.Helpers;
 using test.Models;
 
 namespace test.Data;
@@ -13,11 +14,13 @@ public class AppDbContext : DbContext
     public DbSet<Project> Projects => Set<Project>();
     public DbSet<ProjectMedia> ProjectMedia => Set<ProjectMedia>();
     public DbSet<ProjectMaterial> ProjectMaterials => Set<ProjectMaterial>();
+    public DbSet<ProjectRate> ProjectRates => Set<ProjectRate>();
     public DbSet<Portfolio> Portfolios => Set<Portfolio>();
     public DbSet<PortfolioMedia> PortfolioMedia => Set<PortfolioMedia>();
     public DbSet<Review> Reviews => Set<Review>();
     public DbSet<Favorite> Favorites => Set<Favorite>();
     public DbSet<DesignConversationRequest> DesignConversationRequests => Set<DesignConversationRequest>();
+    public DbSet<WhatsAppNumber> WhatsAppNumbers => Set<WhatsAppNumber>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -68,6 +71,19 @@ public class AppDbContext : DbContext
              .WithMany(p => p.Materials)
              .HasForeignKey(m => m.ProjectId)
              .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<ProjectRate>(e =>
+        {
+            e.HasOne(r => r.Project)
+             .WithMany()
+             .HasForeignKey(r => r.ProjectId)
+             .OnDelete(DeleteBehavior.Cascade);
+
+            e.HasOne(r => r.User)
+             .WithMany()
+             .HasForeignKey(r => r.UserId)
+             .OnDelete(DeleteBehavior.Restrict);
         });
 
         modelBuilder.Entity<Portfolio>(e =>
@@ -146,6 +162,24 @@ public class AppDbContext : DbContext
              .WithMany()
              .HasForeignKey(r => r.CityId)
              .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        // Global, solution-level WhatsApp number: exactly zero or one row, ever.
+        modelBuilder.Entity<WhatsAppNumber>(e =>
+        {
+            // The key is assigned by the application (always WhatsAppNumber.SingletonId),
+            // not by an identity column, so the check constraint below can pin it to a single row.
+            e.Property(w => w.Id).ValueGeneratedNever();
+
+            e.Property(w => w.PhoneNumber)
+             .IsRequired()
+             .HasMaxLength(PhoneNumberHelper.MaxLength);
+
+            e.HasIndex(w => w.PhoneNumber).IsUnique();
+
+            e.ToTable(t => t.HasCheckConstraint(
+                "CK_WhatsAppNumbers_SingleRow",
+                $"[Id] = {WhatsAppNumber.SingletonId}"));
         });
     }
 }
