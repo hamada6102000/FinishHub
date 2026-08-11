@@ -27,7 +27,7 @@ public class Project
     public User User { get; set; } = null!;
     public City? City { get; set; }
     public List<ProjectMedia> Media { get; set; } = new();
-    public List<ProjectMaterial> Materials { get; set; } = new();
+    public List<ProjectMaterial>? Materials { get; set; }
 }
 
 public class ProjectRate

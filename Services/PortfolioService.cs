@@ -55,12 +55,9 @@ public class PortfolioService
         }
 
         var imageUrls = await FileUploadHelper.SaveFilesAsync(req.Images, "portfolio/images", _env);
-        var videoUrls = await FileUploadHelper.SaveFilesAsync(req.Videos, "portfolio/videos", _env);
 
         foreach (var url in imageUrls)
             _db.PortfolioMedia.Add(new PortfolioMedia { PortfolioId = portfolio.Id, Url = url, MediaType = MediaType.Image });
-        foreach (var url in videoUrls)
-            _db.PortfolioMedia.Add(new PortfolioMedia { PortfolioId = portfolio.Id, Url = url, MediaType = MediaType.Video });
 
         await _db.SaveChangesAsync();
 

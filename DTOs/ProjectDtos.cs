@@ -20,7 +20,6 @@ public class CreateProjectRequest
     [ModelBinder(BinderType = typeof(JsonFormDataModelBinder))]
     public List<ProjectMaterialRequest>? Materials { get; set; }
     public List<IFormFile>? Images { get; set; }
-    public List<IFormFile>? Videos { get; set; }
 }
 
 public class UpdateProjectRequest

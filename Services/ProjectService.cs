@@ -92,7 +92,7 @@ public class ProjectService
         _db.Projects.Add(project);
         await _db.SaveChangesAsync();
 
-        await SaveMediaAsync(project.Id, req.Images, req.Videos);
+        await SaveMediaAsync(project.Id, req.Images);
         SaveMaterials(project.Id, req.Materials);
         await _db.SaveChangesAsync();
 
@@ -116,8 +116,11 @@ public class ProjectService
 
         if (req.Materials != null)
         {
-            _db.ProjectMaterials.RemoveRange(project.Materials);
-            project.Materials.Clear();
+            if (project.Materials != null)
+            {
+                _db.ProjectMaterials.RemoveRange(project.Materials);
+                project.Materials.Clear();
+            }
             SaveMaterials(project.Id, req.Materials);
         }
 
@@ -141,15 +144,12 @@ public class ProjectService
 
     // ---------- helpers ----------
 
-    private async Task SaveMediaAsync(int projectId, List<IFormFile>? images, List<IFormFile>? videos)
+    private async Task SaveMediaAsync(int projectId, List<IFormFile>? images)
     {
         var imageUrls = await FileUploadHelper.SaveFilesAsync(images, "projects/images", _env);
-        var videoUrls = await FileUploadHelper.SaveFilesAsync(videos, "projects/videos", _env);
 
         foreach (var url in imageUrls)
             _db.ProjectMedia.Add(new ProjectMedia { ProjectId = projectId, Url = url, MediaType = MediaType.Image });
-        foreach (var url in videoUrls)
-            _db.ProjectMedia.Add(new ProjectMedia { ProjectId = projectId, Url = url, MediaType = MediaType.Video });
     }
 
     private void SaveMaterials(int projectId, List<ProjectMaterialRequest>? materials)
@@ -257,6 +257,6 @@ public class ProjectService
         Rate         = p.Rate,
         CreatedAt    = p.CreatedAt,
         Media        = p.Media.Select(m => new ProjectMediaDto { Id = m.Id, Url = m.Url, MediaType = m.MediaType }).ToList(),
-        Materials    = p.Materials.Select(m => new ProjectMaterialDto { Id = m.Id, MaterialName = m.MaterialName, Description = m.Description }).ToList(),
+        Materials    = p.Materials?.Select(m => new ProjectMaterialDto { Id = m.Id, MaterialName = m.MaterialName, Description = m.Description }).ToList() ?? new(),
     };
 }

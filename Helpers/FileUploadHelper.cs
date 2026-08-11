@@ -3,7 +3,6 @@ namespace test.Helpers;
 public static class FileUploadHelper
 {
     private static readonly string[] AllowedImageExtensions = [".jpg", ".jpeg", ".png", ".webp"];
-    private static readonly string[] AllowedVideoExtensions = [".mp4", ".mov", ".avi", ".mkv"];
 
     public static async Task<string?> SaveFileAsync(IFormFile? file, string subfolder, IWebHostEnvironment env, string baseUrl = "")
     {
@@ -43,9 +42,4 @@ public static class FileUploadHelper
         return AllowedImageExtensions.Contains(ext);
     }
 
-    public static bool IsVideo(IFormFile file)
-    {
-        var ext = Path.GetExtension(file.FileName).ToLowerInvariant();
-        return AllowedVideoExtensions.Contains(ext);
-    }
 }

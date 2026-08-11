@@ -21,5 +21,4 @@ public class PortfolioMediaDto
 public class AddPortfolioMediaRequest
 {
     public List<IFormFile>? Images { get; set; }
-    public List<IFormFile>? Videos { get; set; }
 }
