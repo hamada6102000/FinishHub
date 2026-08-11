@@ -10,4 +10,5 @@ public class FavoriteEngineerDto
     public double Rating { get; set; }
     public string? City { get; set; }
     public string ProfileImage { get; set; } = string.Empty;
+    public int? TotalExperience { get; set; }
 }

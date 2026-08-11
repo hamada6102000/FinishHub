@@ -124,10 +124,21 @@ public class ProjectService
             SaveMaterials(project.Id, req.Materials);
         }
 
+        if (req.RemoveMediaIds is { Count: > 0 })
+        {
+            var toRemove = project.Media.Where(m => req.RemoveMediaIds.Contains(m.Id)).ToList();
+            _db.ProjectMedia.RemoveRange(toRemove);
+        }
+
+        if (req.Images is { Count: > 0 })
+            await SaveMediaAsync(project.Id, req.Images);
+
         await _db.SaveChangesAsync();
 
         if (req.Materials != null)
             await _db.Entry(project).Collection(p => p.Materials).LoadAsync();
+        if (req.RemoveMediaIds is { Count: > 0 } || req.Images is { Count: > 0 })
+            await _db.Entry(project).Collection(p => p.Media).LoadAsync();
 
         return (true, Map(project, lang));
     }

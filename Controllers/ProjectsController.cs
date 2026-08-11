@@ -56,9 +56,10 @@ public class ProjectsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = dto.Id }, ApiResponse.Success(dto, "Project created."));
     }
 
-    /// <summary>Update a project.</summary>
+    /// <summary>Update a project, optionally adding new images or removing existing ones.</summary>
     [HttpPut("{id}")]
-    public async Task<IActionResult> Update(int id, [FromBody] UpdateProjectRequest req)
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> Update(int id, [FromForm] UpdateProjectRequest req)
     {
         var (success, dto) = await _projects.UpdateAsync(id, CurrentUserId, req, GetLang());
         if (!success) return NotFound(ApiResponse.Fail("Project not found or access denied."));
