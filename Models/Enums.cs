@@ -17,7 +17,8 @@ public enum PropertyType
 
 public enum MediaType
 {
-    Image
+    Image,
+    Video
 }
 
 public enum DesignService
