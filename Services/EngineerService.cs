@@ -38,7 +38,7 @@ public class EngineerService
         return page.Map(MapSummary);
     }
 
-    public async Task<EngineerProfileDto?> GetProfileAsync(int id, string lang = "en", bool includeInactive = false)
+    public async Task<EngineerProfileDto?> GetProfileAsync(int id, string lang = "en", int? currentUserId = null, bool includeInactive = false)
     {
         var query = UserService.ApplyActiveFilter(_db.Users.AsNoTracking(), includeInactive);
 
@@ -50,7 +50,12 @@ public class EngineerService
             .Include(u => u.City)
             .FirstOrDefaultAsync(u => u.Id == id && u.UserType == UserType.Engineer);
 
-        return engineer == null ? null : Map(engineer, lang);
+        if (engineer == null) return null;
+
+        var isFavourite = currentUserId.HasValue &&
+            await _db.Favorites.AsNoTracking().AnyAsync(f => f.UserId == currentUserId.Value && f.EngineerId == id);
+
+        return Map(engineer, lang, isFavourite);
     }
 
     /// <summary>Builds the filtered, unordered queryable used by Explore search.</summary>
@@ -90,7 +95,7 @@ public class EngineerService
         IsFavourite     = engineer.IsFavourite,
     };
 
-    private static EngineerProfileDto Map(User engineer, string lang) => new()
+    private static EngineerProfileDto Map(User engineer, string lang, bool isFavourite) => new()
     {
         Id              = engineer.Id,
         NameAr          = engineer.NameAr,
@@ -104,7 +109,7 @@ public class EngineerService
         Country         = engineer.Country,
         ProfileImageUrl = engineer.ProfileImageUrl,
         CoverImageUrl   = engineer.CoverImageUrl,
-        IsFavourite     = engineer.IsFavourite,
+        IsFavourite     = isFavourite,
         Projects        = engineer.Projects.Select(p => new ProjectDto
         {
             Id           = p.Id,
