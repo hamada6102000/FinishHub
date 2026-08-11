@@ -254,6 +254,7 @@ public class ProjectService
         Id           = p.Id,
         UserId       = p.UserId,
         UserName     = lang == "ar" ? (p.User?.NameAr ?? string.Empty) : (p.User?.NameEn ?? string.Empty),
+        UserProfileImage = p.User?.ProfileImageUrl ?? string.Empty,
         Title        = p.Title,
         Location     = p.Location,
         City         = p.City?.NameEn,

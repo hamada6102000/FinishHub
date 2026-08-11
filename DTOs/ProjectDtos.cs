@@ -51,6 +51,7 @@ public class ProjectDto
     public int Id { get; set; }
     public int UserId { get; set; }
     public string UserName { get; set; } = string.Empty;
+    public string UserProfileImage { get; set; } = string.Empty;
     public string Title { get; set; } = string.Empty;
     public string? Location { get; set; }
     public string? City { get; set; }
