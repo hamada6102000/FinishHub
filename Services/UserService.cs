@@ -6,6 +6,13 @@ using test.Models;
 
 namespace test.Services;
 
+public enum SetUserTypeResult
+{
+    Success,
+    UserNotFound,
+    InvalidType,
+}
+
 public class UserService
 {
     private readonly AppDbContext _db;
@@ -27,8 +34,12 @@ public class UserService
     public async Task<PagedResult<UserDto>> GetAllAsync(PaginationQuery pagination)
     {
         var query = ApplyActiveFilter(
-            _db.Users.AsNoTracking().Include(u => u.City),
+            _db.Users.AsNoTracking().Include(u => u.City).Include(u => u.Type),
             pagination.IncludeInactive);
+
+        // Optional "users of this type" filter — GET /api/users?userTypeId={id}
+        if (pagination.UserTypeId.HasValue)
+            query = query.Where(u => u.UserTypeId == pagination.UserTypeId.Value);
 
         var page = await query
             .OrderByDescending(u => u.CreatedAt)
@@ -43,6 +54,7 @@ public class UserService
         var user = await _db.Users
             .AsNoTracking()
             .Include(u => u.City)
+            .Include(u => u.Type)
             // Only active projects surface in the profile response.
             .Include(u => u.Projects.Where(p => p.IsActive)).ThenInclude(p => p.Media)
             .Include(u => u.Portfolio).ThenInclude(p => p!.Media)
@@ -94,7 +106,7 @@ public class UserService
 
     public async Task<UserDto?> UpdateProfileAsync(int userId, UpdateProfileRequest req)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _db.Users.Include(u => u.Type).FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) return null;
 
         if (req.NameAr      != null) user.NameAr      = req.NameAr;
@@ -122,7 +134,7 @@ public class UserService
 
     public async Task<UserDto?> SetTrustedAsync(int userId, bool isTrusted)
     {
-        var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _db.Users.Include(u => u.Type).FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) return null;
 
         user.IsTrusted = isTrusted;
@@ -141,7 +153,7 @@ public class UserService
     /// </summary>
     public async Task<UserDto?> SetActiveAsync(int userId, bool isActive)
     {
-        var user = await _db.Users.Include(u => u.City).FirstOrDefaultAsync(u => u.Id == userId);
+        var user = await _db.Users.Include(u => u.City).Include(u => u.Type).FirstOrDefaultAsync(u => u.Id == userId);
         if (user == null) return null;
 
         if (user.IsActive == isActive)
@@ -152,5 +164,32 @@ public class UserService
         await _db.SaveChangesAsync();
 
         return AuthService.MapUser(user);
+    }
+
+    /// <summary>
+    /// Changes which user type a user belongs to (admin use). The target type must exist and be
+    /// active — the same rules registration applies — so a user can never be moved onto a
+    /// retired type. Inactive users are reachable here on purpose, so administrators can correct
+    /// a deactivated account's type before reactivating it.
+    /// </summary>
+    public async Task<(SetUserTypeResult result, string message, UserDto? data)> SetUserTypeAsync(int userId, int userTypeId)
+    {
+        var user = await _db.Users.Include(u => u.City).Include(u => u.Type).FirstOrDefaultAsync(u => u.Id == userId);
+        if (user == null)
+            return (SetUserTypeResult.UserNotFound, "User not found.", null);
+
+        var (typeResult, typeMessage, type) = await UserTypeService.ResolveAssignableAsync(_db, userTypeId);
+        if (typeResult != UserTypeAssignment.Ok)
+            return (SetUserTypeResult.InvalidType, typeMessage, null);
+
+        if (user.UserTypeId == type!.Id)
+            return (SetUserTypeResult.Success, "User type updated.", AuthService.MapUser(user));
+
+        UserTypeService.Assign(user, type);
+        user.Type      = type;
+        user.UpdatedAt = DateTime.UtcNow;
+        await _db.SaveChangesAsync();
+
+        return (SetUserTypeResult.Success, "User type updated.", AuthService.MapUser(user));
     }
 }

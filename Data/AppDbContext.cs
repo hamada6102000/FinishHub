@@ -9,6 +9,7 @@ public class AppDbContext : DbContext
     public AppDbContext(DbContextOptions<AppDbContext> options) : base(options) { }
 
     public DbSet<User> Users => Set<User>();
+    public DbSet<UserType> UserTypes => Set<UserType>();
     public DbSet<City> Cities => Set<City>();
     public DbSet<OtpCode> OtpCodes => Set<OtpCode>();
     public DbSet<Project> Projects => Set<Project>();
@@ -34,6 +35,25 @@ public class AppDbContext : DbContext
              .WithMany(c => c.Users)
              .HasForeignKey(u => u.CityId)
              .OnDelete(DeleteBehavior.Restrict);
+
+            // Restrict: a type that is still assigned to users can never be deleted out from
+            // under them, which is what keeps existing users from losing their type.
+            e.HasOne(u => u.Type)
+             .WithMany(t => t.Users)
+             .HasForeignKey(u => u.UserTypeId)
+             .OnDelete(DeleteBehavior.Restrict);
+        });
+
+        modelBuilder.Entity<UserType>(e =>
+        {
+            e.Property(t => t.NameEn).IsRequired().HasMaxLength(100);
+            e.Property(t => t.NameAr).IsRequired().HasMaxLength(100);
+            e.Property(t => t.Code).HasMaxLength(50);
+            e.Property(t => t.Kind).HasConversion<string>();
+
+            e.HasIndex(t => t.NameEn).IsUnique();
+            e.HasIndex(t => t.NameAr).IsUnique();
+            e.HasIndex(t => t.Code).IsUnique().HasFilter("[Code] IS NOT NULL");
         });
 
         modelBuilder.Entity<City>(e =>

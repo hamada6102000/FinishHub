@@ -19,7 +19,7 @@ public class EngineerService
                 .AsNoTracking()
                 .Include(u => u.Reviews)
                 .Include(u => u.City)
-                .Where(u => u.UserType == UserType.Engineer),
+                .Where(u => u.UserType == UserTypeKind.Engineer),
             pagination.IncludeInactive);
 
         if (pagination.IsTrusted.HasValue && pagination.IsTrusted.Value)
@@ -48,7 +48,7 @@ public class EngineerService
             .Include(u => u.Portfolio).ThenInclude(p => p!.Media)
             .Include(u => u.Reviews).ThenInclude(r => r.Reviewer)
             .Include(u => u.City)
-            .FirstOrDefaultAsync(u => u.Id == id && u.UserType == UserType.Engineer);
+            .FirstOrDefaultAsync(u => u.Id == id && u.UserType == UserTypeKind.Engineer);
 
         if (engineer == null) return null;
 
@@ -66,7 +66,7 @@ public class EngineerService
                 .AsNoTracking()
                 .Include(u => u.Reviews)
                 .Include(u => u.City)
-                .Where(u => u.UserType == UserType.Engineer),
+                .Where(u => u.UserType == UserTypeKind.Engineer),
             includeInactive);
 
         if (!string.IsNullOrWhiteSpace(keyword))

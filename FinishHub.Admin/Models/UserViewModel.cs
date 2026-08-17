@@ -12,11 +12,22 @@ public class UserViewModel
     public string PhoneNumber { get; set; } = string.Empty;
 
     /// <summary>
-    /// The API writes this as an enum name, but falls back to the raw number for
-    /// values that are not defined in the enum (e.g. a user stored with 0).
+    /// The behaviour bucket ("User" / "Engineer"). The API writes this as an enum name, but
+    /// falls back to the raw number for values that are not defined in the enum (e.g. a user
+    /// stored with 0). The configurable type shown to administrators is UserTypeName.
     /// </summary>
     [JsonConverter(typeof(LenientStringConverter))]
     public string UserType { get; set; } = string.Empty;
+
+    /// <summary>Id of the configurable user type, used to preselect the change-type dropdown.</summary>
+    public int UserTypeId { get; set; }
+
+    /// <summary>Configurable type name, e.g. "Carpenter". Falls back to UserType when absent.</summary>
+    public string? UserTypeName { get; set; }
+
+    /// <summary>What the users table shows in the Type column.</summary>
+    public string DisplayUserType =>
+        string.IsNullOrWhiteSpace(UserTypeName) ? UserType : UserTypeName;
 
     public bool IsActive { get; set; }
     public bool IsTrusted { get; set; }

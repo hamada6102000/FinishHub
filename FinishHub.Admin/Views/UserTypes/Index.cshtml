@@ -1,0 +1,114 @@
+@model FinishHub.Admin.Models.PagedResult<FinishHub.Admin.Models.UserTypeViewModel>
+
+@{
+    ViewData["Title"] = "User Types";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1 class="h3 mb-0">User Types</h1>
+    <a asp-action="Create" asp-route-pageSize="@Model.PageSize" class="btn btn-primary">+ Add User Type</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+@if (TempData["Error"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["Error"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+}
+
+<div class="card shadow-sm">
+    <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>Name (English)</th>
+                    <th>Name (Arabic)</th>
+                    <th>Status</th>
+                    <th>Users</th>
+                    <th>Created</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Items.Count == 0)
+                {
+                    <tr>
+                        <td colspan="6" class="text-center text-muted py-4">
+                            @(Model.TotalCount == 0 ? "No user types have been added yet." : "This page is empty.")
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    foreach (var type in Model.Items)
+                    {
+                        <tr class="@(type.IsActive ? null : "table-warning")">
+                            <td>
+                                @type.NameEn
+                                @if (type.IsSystem)
+                                {
+                                    <span class="badge bg-info ms-1" title="Built-in type: cannot be deactivated or deleted.">Built-in</span>
+                                }
+                            </td>
+                            <td>@type.NameAr</td>
+                            <td>
+                                @if (type.IsActive)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Inactive</span>
+                                }
+                            </td>
+                            <td>@type.UsersCount</td>
+                            <td>@type.CreatedAt.ToString("yyyy-MM-dd")</td>
+                            <td class="text-end">
+                                @if (!type.IsSystem)
+                                {
+                                    var confirmMessage = type.IsActive
+                                        ? (type.UsersCount > 0
+                                            ? $"Deactivate \"{type.NameEn}\"? The {type.UsersCount} user(s) already assigned to it keep this type, but it will no longer appear at signup and cannot be assigned to anyone new."
+                                            : $"Deactivate \"{type.NameEn}\"? It will no longer appear at signup.")
+                                        : $"Activate \"{type.NameEn}\"?";
+
+                                    <form asp-action="SetActive" method="post" class="d-inline"
+                                          onsubmit="return confirm('@confirmMessage');">
+                                        <input type="hidden" name="id" value="@type.Id" />
+                                        <input type="hidden" name="isActive" value="@((!type.IsActive).ToString().ToLowerInvariant())" />
+                                        <input type="hidden" name="page" value="@Model.Page" />
+                                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                        <button type="submit" class="btn btn-sm @(type.IsActive ? "btn-outline-danger" : "btn-outline-success")">
+                                            @(type.IsActive ? "Deactivate" : "Activate")
+                                        </button>
+                                    </form>
+                                }
+                                <a asp-action="Edit" asp-route-id="@type.Id" asp-route-page="@Model.Page"
+                                   asp-route-pageSize="@Model.PageSize" class="btn btn-sm btn-outline-secondary">Edit</a>
+                                @if (!type.IsSystem && type.UsersCount == 0)
+                                {
+                                    <form asp-action="Delete" asp-route-id="@type.Id" method="post" class="d-inline"
+                                          onsubmit="return confirm('Delete user type &quot;@type.NameEn&quot;? This cannot be undone.');">
+                                        <input type="hidden" name="page" value="@Model.Page" />
+                                        <input type="hidden" name="pageSize" value="@Model.PageSize" />
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Delete</button>
+                                    </form>
+                                }
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@{await Html.RenderPartialAsync("_Pager", FinishHub.Admin.Models.PagerViewModel.From(Model));}

@@ -40,6 +40,14 @@ public class PaginationQuery
     [FromQuery(Name = "isPinned")]
     public bool? IsPinned { get; set; }
 
+    /// <summary>
+    /// Optional filter by user type. When set, only users belonging to that type are returned.
+    /// Filtering is by id rather than name because names are editable and bilingual, so an
+    /// administrator renaming a type would otherwise silently break every caller.
+    /// </summary>
+    [FromQuery(Name = "userTypeId")]
+    public int? UserTypeId { get; set; }
+
     /// <summary>If true, orders results by rate descending instead of the default (most recent first).</summary>
     [FromQuery(Name = "topRated")]
     public bool? TopRated { get; set; }

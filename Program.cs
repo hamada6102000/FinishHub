@@ -47,6 +47,7 @@ builder.Services.AddScoped<FavoriteService>();
 builder.Services.AddScoped<EngineerService>();
 builder.Services.AddScoped<UserService>();
 builder.Services.AddScoped<CityService>();
+builder.Services.AddScoped<UserTypeService>();
 builder.Services.AddScoped<DesignConversationService>();
 builder.Services.AddScoped<ExploreService>();
 builder.Services.AddScoped<WhatsAppNumberService>();

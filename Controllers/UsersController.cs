@@ -31,6 +31,7 @@ public class UsersController : ControllerBase
     /// <summary>
     /// Get a page of users. Returns active users only; the Dashboard passes
     /// includeInactive=true to also get deactivated users for management.
+    /// Pass userTypeId to return only the users belonging to that user type.
     /// </summary>
     [HttpGet]
     [AllowAnonymous]
@@ -68,5 +69,22 @@ public class UsersController : ControllerBase
         var dto = await _users.SetActiveAsync(id, req.IsActive);
         if (dto == null) return NotFound(ApiResponse.Fail("User not found."));
         return Ok(ApiResponse.Success(dto, req.IsActive ? "User activated." : "User deactivated."));
+    }
+
+    /// <summary>
+    /// Change which user type a user belongs to (admin use). The target type must exist and be
+    /// active; deactivated types cannot be assigned.
+    /// </summary>
+    [HttpPatch("{id}/type")]
+    [AllowAnonymous]
+    public async Task<IActionResult> SetUserType(int id, [FromBody] SetUserTypeRequest req)
+    {
+        var (result, message, data) = await _users.SetUserTypeAsync(id, req.UserTypeId);
+        return result switch
+        {
+            SetUserTypeResult.Success => Ok(ApiResponse.Success(data, message)),
+            SetUserTypeResult.UserNotFound => NotFound(ApiResponse.Fail(message)),
+            _ => BadRequest(ApiResponse.Fail(message)),
+        };
     }
 }

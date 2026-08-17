@@ -13,7 +13,17 @@ public class User
     public string ProfileImageUrl { get; set; } = string.Empty;
     public string CoverImageUrl { get; set; } = string.Empty;
     public int? TotalExperience { get; set; }
-    public UserType UserType { get; set; }
+
+    /// <summary>
+    /// Behaviour bucket, kept in sync from <see cref="Type"/>.Kind whenever the type is assigned.
+    /// Existing engineer/client rules read this, so they need no join and keep behaving exactly
+    /// as before. The user-facing label is <see cref="Type"/>, not this.
+    /// </summary>
+    public UserTypeKind UserType { get; set; }
+
+    /// <summary>The configurable user type this user belongs to.</summary>
+    public int UserTypeId { get; set; } = Models.UserType.UserId;
+
     public string? Bio { get; set; }
     public string Position { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
@@ -27,6 +37,7 @@ public class User
 
     // Navigation
     public City? City { get; set; }
+    public UserType? Type { get; set; }
     public List<Project> Projects { get; set; } = new();
     public Portfolio? Portfolio { get; set; }
     public List<Review> Reviews { get; set; } = new();

@@ -29,7 +29,7 @@ public class DesignConversationService
         if (engineer == null)
             return (DesignConversationResult.EngineerNotFound, "Engineer not found.", null);
 
-        if (engineer.UserType != UserType.Engineer)
+        if (engineer.UserType != UserTypeKind.Engineer)
             return (DesignConversationResult.TargetIsNotEngineer, "A conversation can only be booked with an engineer.", null);
 
         if (!await _db.Cities.AnyAsync(c => c.Id == req.CityId))

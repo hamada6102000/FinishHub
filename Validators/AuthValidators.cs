@@ -17,6 +17,7 @@ public class RegisterRequestValidator : AbstractValidator<RegisterRequest>
         RuleFor(x => x.CoverImage).NotNull().WithMessage("Cover image is required.")
             .Must(f => f!.Length > 0).WithMessage("Cover image cannot be empty.").When(x => x.CoverImage != null);
         RuleFor(x => x.Position).NotEmpty().WithMessage("Position is required.");
+        RuleFor(x => x.UserTypeId).GreaterThan(0).WithMessage("User type is required.");
     }
 }
 

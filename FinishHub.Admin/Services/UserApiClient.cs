@@ -41,6 +41,13 @@ public class UserApiClient : IUserApiClient
         return (success, message);
     }
 
+    public async Task<(bool success, string message)> SetUserTypeAsync(int id, int userTypeId)
+    {
+        var response = await _http.PatchAsJsonAsync($"api/users/{id}/type", new { UserTypeId = userTypeId });
+        var (success, message, _) = await ReadEnvelopeAsync<object>(response);
+        return (success, message);
+    }
+
     private async Task<(bool success, string message, T? data)> ReadEnvelopeAsync<T>(HttpResponseMessage response)
     {
         try

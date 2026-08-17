@@ -25,7 +25,7 @@ public class FavoriteService
     public async Task<(FavoriteResult result, string message)> AddAsync(int userId, int engineerId)
     {
         var user = await _db.Users.FirstOrDefaultAsync(u => u.Id == userId);
-        if (user == null || user.UserType != UserType.User)
+        if (user == null || user.UserType != UserTypeKind.User)
             return (FavoriteResult.UserIsNotClient, "Only users can add favorites.");
 
         // Inactive engineers are invisible to the app, so they cannot be favorited either.
@@ -33,7 +33,7 @@ public class FavoriteService
         if (engineer == null)
             return (FavoriteResult.EngineerNotFound, "Engineer not found.");
 
-        if (engineer.UserType != UserType.Engineer)
+        if (engineer.UserType != UserTypeKind.Engineer)
             return (FavoriteResult.TargetIsNotEngineer, "Only engineers can be added to favorites.");
 
         var alreadyFavorited = await _db.Favorites.AnyAsync(f => f.UserId == userId && f.EngineerId == engineerId);

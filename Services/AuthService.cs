@@ -32,8 +32,9 @@ public class AuthService
         if (await _db.Users.AnyAsync(u => u.Email == req.Email))
             return (false, "Email already exists.", null);
 
-        if (!Enum.IsDefined(typeof(UserType), req.UserType))
-            return (false, "Invalid user type. Use 1 (User) or 2 (Engineer).", null);
+        var (typeResult, typeMessage, userType) = await UserTypeService.ResolveAssignableAsync(_db, req.UserTypeId);
+        if (typeResult != UserTypeAssignment.Ok)
+            return (false, typeMessage, null);
 
         City? city = null;
         if (req.CityId.HasValue)
@@ -57,10 +58,13 @@ public class AuthService
             ProfileImageUrl = profileUrl,
             CoverImageUrl   = coverUrl,
             TotalExperience = req.TotalExperience,
-            UserType        = req.UserType,
+            Type            = userType,
             Bio             = req.Bio,
             Position        = req.Position,
         };
+
+        // Sets UserTypeId and copies the behaviour bucket onto User.UserType in one place.
+        UserTypeService.Assign(user, userType!);
 
         user.PasswordHash = _hasher.HashPassword(user, req.Password);
 
@@ -73,7 +77,7 @@ public class AuthService
 
     public async Task<(bool success, string message, AuthResponse? response)> LoginAsync(LoginRequest req)
     {
-        var user = await _db.Users.Include(u => u.City).FirstOrDefaultAsync(u => u.Email == req.Email);
+        var user = await _db.Users.Include(u => u.City).Include(u => u.Type).FirstOrDefaultAsync(u => u.Email == req.Email);
         if (user == null)
             return (false, "Invalid credentials.", null);
 
@@ -88,11 +92,13 @@ public class AuthService
         return (true, "Login successful.", BuildAuthResponse(user));
     }
 
-    public async Task<(bool success, string message, AuthResponse? response)> GoogleLoginAsync(string idToken, UserType userType = UserType.User)
+    /// <summary>
+    /// Signs a Google user in, creating the account on first use. New clients send userTypeId;
+    /// legacyKind keeps older builds — which only know the User/Engineer enum — working unchanged.
+    /// </summary>
+    public async Task<(bool success, string message, AuthResponse? response)> GoogleLoginAsync(
+        string idToken, int? userTypeId = null, UserTypeKind legacyKind = UserTypeKind.User)
     {
-        if (!Enum.IsDefined(typeof(UserType), userType))
-            userType = UserType.User;
-
         ExternalAuthPayload payload;
         try
         {
@@ -104,10 +110,18 @@ public class AuthService
             return (false, "Invalid Google token.", null);
         }
 
-        var user = await _db.Users.Include(u => u.City).FirstOrDefaultAsync(u => u.Email == payload.Email);
+        var user = await _db.Users.Include(u => u.City).Include(u => u.Type).FirstOrDefaultAsync(u => u.Email == payload.Email);
 
         if (user == null)
         {
+            // Only new accounts need a type; an existing user keeps whatever they already have.
+            var requestedTypeId = userTypeId
+                ?? (legacyKind == UserTypeKind.Engineer ? UserType.EngineerId : UserType.UserId);
+
+            var (typeResult, typeMessage, selectedType) = await UserTypeService.ResolveAssignableAsync(_db, requestedTypeId);
+            if (typeResult != UserTypeAssignment.Ok)
+                return (false, typeMessage, null);
+
             user = new User
             {
                 Email        = payload.Email,
@@ -116,8 +130,10 @@ public class AuthService
                 PhoneNumber  = string.Empty,
                 GoogleId     = payload.Subject,
                 PasswordHash = string.Empty,
-                UserType     = userType,
+                Type         = selectedType,
             };
+            UserTypeService.Assign(user, selectedType!);
+
             _db.Users.Add(user);
             await _db.SaveChangesAsync();
         }
@@ -157,7 +173,10 @@ public class AuthService
         {
             new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
             new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            // userType stays the behaviour bucket name so existing clients keep reading it as
+            // before; userTypeId identifies the configurable type the user actually picked.
             new Claim("userType", user.UserType.ToString()),
+            new Claim("userTypeId", user.UserTypeId.ToString()),
         };
 
         var token = new JwtSecurityToken(
@@ -184,6 +203,8 @@ public class AuthService
         CoverImageUrl   = user.CoverImageUrl,
         TotalExperience = user.TotalExperience,
         UserType        = user.UserType,
+        UserTypeId      = user.UserTypeId,
+        UserTypeName    = user.Type?.NameEn,
         Bio             = user.Bio,
         IsActive        = user.IsActive,
         IsFavourite     = user.IsFavourite,

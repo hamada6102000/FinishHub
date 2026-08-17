@@ -13,4 +13,7 @@ public interface IUserApiClient
     Task<(bool success, string message)> SetTrustedAsync(int id, bool isTrusted);
 
     Task<(bool success, string message)> SetActiveAsync(int id, bool isActive);
+
+    /// <summary>Moves a user onto another user type. The target type must exist and be active.</summary>
+    Task<(bool success, string message)> SetUserTypeAsync(int id, int userTypeId);
 }
